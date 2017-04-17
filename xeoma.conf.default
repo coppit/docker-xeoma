@@ -1,0 +1,5 @@
+# The password for clients to use to connect. Avoid backslashes and apostrophes.
+PASSWORD='YOUR_PASSWORD'
+
+# Whether or not to run the beta version of Xeoma that is included in the container
+USE_BETA=no
