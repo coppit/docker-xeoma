@@ -47,3 +47,7 @@ If you find any bugs with the software that are related to the docker container,
 ### Automatic Upgrades
 
 Xeoma will automatically detect new versions and update itself. You can use this feature, but just be aware that none of the changes are saved in the container. So if your container is recreated, you will need to reinstall the newer version again. I'll try to keep the container up-to-date as new stable versions are released, so that you can simply update your container.
+
+## Credits
+
+This docker container was initially based on the [jedimonkey/xeoma container](https://github.com/jedimonkey/xeoma-docker).
