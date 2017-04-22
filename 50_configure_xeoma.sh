@@ -58,3 +58,20 @@ ln -s /archive /config/XeomaArchive
 
 # Clean up any mess from before
 rm -f /config/config
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+VERSION=stable
+
+if [[ "$USE_BETA" == y* ]]; then
+  VERSION=beta
+fi
+
+echo "$(ts) Using the $VERSION version of Xeoma"
+ln -s /files/$VERSION/xeoma.app /usr/bin/xeoma
+
+echo "$(ts) Setting the password"
+/usr/bin/xeoma -setpassword "$PASSWORD"
+
+# Not sure why this is necessary, but without it, I can't connect to the server
+/usr/bin/xeoma -showpassword > /dev/null 2>&1
