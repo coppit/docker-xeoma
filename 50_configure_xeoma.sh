@@ -44,11 +44,14 @@ echo "$(ts) $iface $mac_address" >> "$MAC_FILE"
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+# If we were to install Xeoma, it would run in /usr/local/Xeoma. But we're not, so it runs in /.config
+mkdir /.config
+
 # Delete before creating the symlinks, for two reasons: (1) the symlink might be left-over from a previous container (and
 # therefore invalid in this container), and (2) if the container is restarted, there will already be a symlink, causing
 # a new symlink like /usr/local/Xeoma/config/config
-rm -f /usr/local/Xeoma
-ln -s /config /usr/local/Xeoma
+rm -f /.config/Xeoma
+ln -s /config /.config/Xeoma
 
 rm -f /config/XeomaArchive
 ln -s /archive /config/XeomaArchive
