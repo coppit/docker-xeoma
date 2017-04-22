@@ -47,8 +47,11 @@ echo "$(ts) $iface $mac_address" >> "$MAC_FILE"
 # Delete before creating the symlinks, for two reasons: (1) the symlink might be left-over from a previous container (and
 # therefore invalid in this container), and (2) if the container is restarted, there will already be a symlink, causing
 # a new symlink like /usr/local/Xeoma/config/config
-rm -f /usr/local/Xeoma/config
+rm -f /usr/local/Xeoma
 ln -s /config /usr/local/Xeoma
 
 rm -f /config/XeomaArchive
 ln -s /archive /config/XeomaArchive
+
+# Clean up any mess from before
+rm -f /config/config
