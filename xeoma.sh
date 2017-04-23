@@ -8,5 +8,5 @@ function ts {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-echo "$(ts) Starting the server in 5 seconds..."
+echo "$(ts) Starting the server in 5 seconds. See the log directory in your config directory for server logs."
 /usr/bin/xeoma -core -service -log -startdelay 5
