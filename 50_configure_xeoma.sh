@@ -45,7 +45,7 @@ echo "$(ts) $iface $mac_address" >> "$MAC_FILE"
 #-----------------------------------------------------------------------------------------------------------------------
 
 # If we were to install Xeoma, it would run in /usr/local/Xeoma. But we're not, so it runs in /.config
-mkdir /.config
+mkdir -p /.config
 
 # Delete before creating the symlinks, for two reasons: (1) the symlink might be left-over from a previous container (and
 # therefore invalid in this container), and (2) if the container is restarted, there will already be a symlink, causing
@@ -68,6 +68,7 @@ if [[ "$USE_BETA" == y* ]]; then
 fi
 
 echo "$(ts) Using the $VERSION version of Xeoma"
+rm -f /usr/bin/xeoma
 ln -s /files/$VERSION/xeoma.app /usr/bin/xeoma
 
 echo "$(ts) Setting the password"
