@@ -61,16 +61,6 @@ rm -f /config/config
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-VERSION=stable
-
-if [[ "$USE_BETA" == y* ]]; then
-  VERSION=beta
-fi
-
-echo "$(ts) Using the $VERSION version of Xeoma"
-rm -f /usr/bin/xeoma
-ln -s /files/$VERSION/xeoma.app /usr/bin/xeoma
-
 echo "$(ts) Setting the password"
 /usr/bin/xeoma -setpassword "$PASSWORD"
 

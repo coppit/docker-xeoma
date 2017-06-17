@@ -12,7 +12,7 @@ To launch the container:
 
 `docker run -d --name=Xeoma -p 8090:8090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
-When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `USE_BETA` to "yes" if you want to run the beta version that is in the container. Then rerun the command. If you prefer to set environment variables for your docker container instead of using the configuration file, simply comment out the vars in the xeoma.conf. Note that the file needs to exist, or the container will recreate it.
+When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see below). Then rerun the command. If you prefer to set environment variables for your docker container instead of using the configuration file, simply comment out the vars in the xeoma.conf. Note that the file needs to exist, or the container will recreate it.
 
 The archive folder holds the saved video recordings. To access your xeoma server, simply download the same version from [the Xeoma website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of the docker host and the password you selected. 
 
@@ -21,6 +21,14 @@ See the notes below for special networking considerations depending on your came
 View logs using:
 
 `docker logs xeoma`
+
+## Choosing a Version
+
+The `VERSION` environment variable can be used to select the version of Xeoma to use. Values can be "latest", "latest_beta", a version string like "17.5.5", or a URL that starts with "http://", "https://" or "ftp://". The default value is "latest". The change history for Xeoma is [here](http://felenasoft.com/xeoma/en/changes/).
+
+During startup, the desired version of Xeoma is downloaded as needed into the "downloads" subdirectory of the config directory. Any files in that directory matching the pattern xeoma_*.tgz will be deleted. It is then installed automatically.
+
+Xeoma will automatically detect new versions and update itself. You can use this feature, but just be aware that none of the changes are saved in the container. So if your container is recreated, you will need to reinstall the newer version again. I'll try to keep the container up-to-date as new stable versions are released, so that you can simply update your container.
 
 ## Notes
 
@@ -43,10 +51,6 @@ Depending on how your security camera works, you might need to enable host netwo
 ### Support
 
 If you find any bugs with the software that are related to the docker container, let me know and I'll investigate.  If you find bugs that are related to the actual software or cameras, etc then contact FelenaSoft.
-
-### Automatic Upgrades
-
-Xeoma will automatically detect new versions and update itself. You can use this feature, but just be aware that none of the changes are saved in the container. So if your container is recreated, you will need to reinstall the newer version again. I'll try to keep the container up-to-date as new stable versions are released, so that you can simply update your container.
 
 ## Credits
 
