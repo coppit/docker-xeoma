@@ -11,10 +11,22 @@ DOWNLOAD_LOCATION=/config/downloads
 INSTALL_LOCATION=/files/xeoma
 LAST_INSTALLED_BREADCRUMB=$INSTALL_LOCATION/last_installed_version.txt
 
+# This needs to match 50_configure_xeoma.sh
+CONFIG_FILE=/config/xeoma.conf
+
 #-----------------------------------------------------------------------------------------------------------------------
 
 function ts {
   echo [`date '+%b %d %X'`]
+}
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+function check_for_old_config_file {
+  if grep -q USE_BETA "$CONFIG_FILE"; then
+    echo "$(ts) Please upgrade your config file! Replace USE_BETA='xxx' with VERSION='latest'. See docs for details"
+    exit 1
+  fi
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -59,11 +71,20 @@ function download_xeoma {
     rm -f "$existing_file"
   done
 
+  TEMP_FILE="$DOWNLOAD_LOCATION/xeoma_temp.tgz" 
+
   echo "$(ts) Downloading from $download_url into $DOWNLOAD_LOCATION"
 
-  wget -q -O "$DOWNLOAD_LOCATION/xeoma_temp.tgz" "$download_url"
+  # Ignore errors here. We'll handle our own error checking
+  wget -q -O "$TEMP_FILE" "$download_url" || true
 
-  mv "$DOWNLOAD_LOCATION/xeoma_temp.tgz" "$LOCAL_FILE"
+  if grep -q 'file not found' "$TEMP_FILE"; then
+    echo "$(ts) ERROR: Could not download from $download_url"
+    rm -rf "$TEMP_FILE"
+    exit 1
+  fi
+
+  mv "$TEMP_FILE" "$LOCAL_FILE"
 
   echo "$(ts) Downloaded $LOCAL_FILE..."
 }
@@ -92,7 +113,7 @@ function install_xeoma {
 
   mkdir -p "$INSTALL_LOCATION"
 
-  tar -xzf "$local_file" -C "$INSTALL_LOCATION"
+  tar -xzf "$local_file" -C "$INSTALL_LOCATION" > /dev/null
 
   rm -f /usr/bin/xeoma
   ln -s "$INSTALL_LOCATION/xeoma.app" /usr/bin/xeoma
@@ -103,6 +124,13 @@ function install_xeoma {
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
+
+check_for_old_config_file
+
+# Deal with \r caused by editing in windows
+tr -d '\r' < "$CONFIG_FILE" > /tmp/xeoma.conf
+
+source /tmp/xeoma.conf
 
 if [[ "$VERSION" == "latest" ]] || [[ "$VERSION" == "" ]]; then
   VERSION=$(latest_stable_version)
@@ -126,3 +154,5 @@ echo "$(ts) Using Xeoma version $VERSION_STRING"
 download_xeoma $VERSION $DOWNLOAD_URL
 
 install_xeoma $VERSION $LOCAL_FILE
+
+exit 0

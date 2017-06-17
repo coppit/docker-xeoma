@@ -66,3 +66,5 @@ echo "$(ts) Setting the password"
 
 # Not sure why this is necessary, but without it, I can't connect to the server
 /usr/bin/xeoma -showpassword > /dev/null 2>&1
+
+exit 0

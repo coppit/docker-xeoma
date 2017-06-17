@@ -43,5 +43,3 @@ RUN chmod +x /etc/service/xeoma/run
 VOLUME [ "/config", "/archive" ]
 
 EXPOSE 8090
-
-ENV VERSION=latest
