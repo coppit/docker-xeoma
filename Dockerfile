@@ -34,7 +34,7 @@ COPY xeoma.conf.default /files/
 COPY 40_install_xeoma.sh 50_configure_xeoma.sh /etc/my_init.d/
 
 # And a cron job for updating Xeoma
-COPY update_xeoma.sh /etc/cron.hourly/
+COPY update_xeoma.sh /etc/cron.hourly/update_xeoma
 
 RUN mkdir /etc/service/xeoma
 ADD xeoma.sh /etc/service/xeoma/run
