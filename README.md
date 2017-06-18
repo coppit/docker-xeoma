@@ -55,3 +55,5 @@ If you find any bugs with the software that are related to the docker container,
 ## Credits
 
 This docker container was initially based on the [jedimonkey/xeoma container](https://github.com/jedimonkey/xeoma-docker).
+
+Thanks to [https://github.com/skylord123](skylord123) on github for the excellent suggestions about how to handle versioning.
