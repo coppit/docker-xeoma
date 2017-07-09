@@ -90,19 +90,17 @@ function download_xeoma {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function install_xeoma {
-  version=$1
-  local_file=$2
+  local_file=$1
 
-  # Xeoma prints a version string like 2017-05-05, which I guess translates to 17.5.5. But the user can also specify a
-  # URL to a version, and it's possible that the Xeoma devs might produce a test version that doesn't bump the version
-  # number. So let's just use a breadcrumb to track the last version that we installed.
   if [[ -e "$LAST_INSTALLED_BREADCRUMB" ]];then
     last_installed_version=$(cat "$LAST_INSTALLED_BREADCRUMB" | tr -d '\n')
   else
     last_installed_version=""
   fi
 
-  if [[ "$last_installed_version" == "$version" ]]; then
+  current_version=$(md5sum $local_file | sed 's/ .*//')
+
+  if [[ "$last_installed_version" == "$current_version" ]]; then
     echo "$(ts) Skipping installation because the currently installed version is the correct one"
     return
   fi
@@ -116,7 +114,7 @@ function install_xeoma {
   rm -f /usr/bin/xeoma
   ln -s "$INSTALL_LOCATION/xeoma.app" /usr/bin/xeoma
 
-  echo "$version" > $LAST_INSTALLED_BREADCRUMB
+  echo "$current_version" > $LAST_INSTALLED_BREADCRUMB
 
   echo "$(ts) Installation complete"
 }
@@ -156,6 +154,6 @@ if [[ "$RC" != 'ok' ]];then
   fi
 fi
 
-install_xeoma $VERSION $LOCAL_FILE
+install_xeoma $LOCAL_FILE
 
 exit 0
