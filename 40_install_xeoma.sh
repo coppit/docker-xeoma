@@ -13,20 +13,12 @@ LAST_INSTALLED_BREADCRUMB=$INSTALL_LOCATION/last_installed_version.txt
 
 # This needs to match 50_configure_xeoma.sh
 CONFIG_FILE=/config/xeoma.conf
+FIXED_CONFIG_FILE=/tmp/xeoma.conf
 
 #-----------------------------------------------------------------------------------------------------------------------
 
 function ts {
   echo [`date '+%b %d %X'`]
-}
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-function check_for_old_config_file {
-  if grep -q USE_BETA "$CONFIG_FILE"; then
-    echo "$(ts) Please upgrade your config file! Replace USE_BETA='xxx' with VERSION='latest'. See docs for details"
-    exit 1
-  fi
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -125,12 +117,7 @@ function install_xeoma {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-check_for_old_config_file
-
-# Deal with \r caused by editing in windows
-tr -d '\r' < "$CONFIG_FILE" > /tmp/xeoma.conf
-
-source /tmp/xeoma.conf
+source "$FIXED_CONFIG_FILE"
 
 if [[ "$VERSION" == "latest" ]] || [[ "$VERSION" == "" ]]; then
   VERSION=$(latest_stable_version)
