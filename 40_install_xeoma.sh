@@ -3,7 +3,9 @@
 set -e
 
 LATEST_VERSIONS_URL=http://felenasoft.com/xeoma/en/download/
-DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_$VERSION.tgz'
+VERSION_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_$VERSION.tgz'
+LATEST_STABLE_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_linux64.tgz'
+LATEST_BETA_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_beta_linux64.tgz'
 
 DOWNLOAD_LOCATION=/config/downloads
 
@@ -51,6 +53,7 @@ function download_xeoma {
 
   if [[ -e "$LOCAL_FILE" ]]; then
     echo "$(ts) Downloaded file $LOCAL_FILE already exists. Skipping download"
+    RC='ok'
     return
   fi
 
@@ -73,12 +76,15 @@ function download_xeoma {
   if grep -q 'file not found' "$TEMP_FILE"; then
     echo "$(ts) ERROR: Could not download from $download_url"
     rm -rf "$TEMP_FILE"
-    exit 1
+    RC='failed'
+    return
   fi
 
   mv "$TEMP_FILE" "$LOCAL_FILE"
 
   echo "$(ts) Downloaded $LOCAL_FILE..."
+
+  RC='ok'
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -122,23 +128,33 @@ source "$FIXED_CONFIG_FILE"
 if [[ "$VERSION" == "latest" ]] || [[ "$VERSION" == "" ]]; then
   VERSION=$(latest_stable_version)
   VERSION_STRING="$VERSION (the latest stable version)"
-  DOWNLOAD_URL=$(eval echo "$DOWNLOAD_URL")
+  download_url="$LATEST_STABLE_DOWNLOAD_URL"
 elif [[ "$VERSION" == "latest_beta" ]]; then
   VERSION=$(latest_beta_version)
   VERSION_STRING="$VERSION (the latest beta version)"
-  DOWNLOAD_URL=$(eval echo "$DOWNLOAD_URL")
+  download_url="$LATEST_BETA_DOWNLOAD_URL"
 elif [[ "$VERSION" == "http://"* ]] || [[ "$VERSION" == "https://"* ]] || [[ "$VERSION" == "ftp://"* ]]; then
   VERSION_STRING="from url ($VERSION)"
-  DOWNLOAD_URL="$VERSION"
+  download_url="$VERSION"
 # A version like "17.5.5"
 else
   VERSION_STRING="$VERSION (a user-specified version)"
-  DOWNLOAD_URL=$(eval echo "$DOWNLOAD_URL")
+  download_url=$(eval echo "$VERSION_DOWNLOAD_URL")
 fi
 
 echo "$(ts) Using Xeoma version $VERSION_STRING"
 
-download_xeoma $VERSION $DOWNLOAD_URL
+download_xeoma $VERSION $download_url
+
+# Sometimes the latest beta isn't at the normal location. Try the versioned location.
+if [[ "$RC" != 'ok' ]];then
+  if [[ "$VERSION" == "latest" ]] || [[ "$VERSION" == "" ]] || [[ "$VERSION" == "latest_beta" ]]; then
+    echo "$(ts) Download from default location failed. Trying from alternate location."
+    download_url=$(eval echo "$VERSION_DOWNLOAD_URL")
+
+    download_xeoma $VERSION $download_url
+  fi
+fi
 
 install_xeoma $VERSION $LOCAL_FILE
 
