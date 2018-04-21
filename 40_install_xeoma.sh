@@ -2,10 +2,10 @@
 
 set -e
 
-LATEST_VERSIONS_URL=http://felenasoft.com/xeoma/en/download/
-VERSION_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_$VERSION.tgz'
-LATEST_STABLE_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_linux64.tgz'
-LATEST_BETA_DOWNLOAD_URL='http://felenasoft.com/xeoma/downloads/xeoma_beta_linux64.tgz'
+LATEST_VERSIONS_URL=https://felenasoft.com/xeoma/en/download/
+VERSION_DOWNLOAD_URL='https://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_$VERSION.tgz'
+LATEST_STABLE_DOWNLOAD_URL='https://felenasoft.com/xeoma/downloads/xeoma_linux64.tgz'
+LATEST_BETA_DOWNLOAD_URL='https://felenasoft.com/xeoma/downloads/xeoma_beta_linux64.tgz'
 
 DOWNLOAD_LOCATION=/config/downloads
 
@@ -26,16 +26,27 @@ function ts {
 #-----------------------------------------------------------------------------------------------------------------------
 
 function latest_stable_version {
-  VERSION_URL=$(curl -s $LATEST_VERSIONS_URL | grep 'images/theme/download/version.js' | sed 's|[^"]*"\([^"]*\)".*|http://felenasoft.com\1|')
+  VERSION_URL=$(curl -s $LATEST_VERSIONS_URL | grep 'images/theme/download/version.js' | sed 's|[^"]*"\([^"]*\)".*|https://felenasoft.com\1|')
   VERSION=$(curl -s $VERSION_URL | grep 'var version ' | sed 's/.*"\(.*\)".*/\1/')
+
+  if [[ "$VERSION" == "" ]]; then
+      (>&2 echo "Failed to download stable version from $LATEST_VERSIONS_URL, $VERSION_URL")
+      exit 1
+  fi
   echo "$VERSION"
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
 
 function latest_beta_version {
-  VERSION_URL=$(curl -s $LATEST_VERSIONS_URL | grep 'images/theme/download/version.js' | sed 's|[^"]*"\([^"]*\)".*|http://felenasoft.com\1|')
+  VERSION_URL=$(curl -s $LATEST_VERSIONS_URL | grep 'images/theme/download/version.js' | sed 's|[^"]*"\([^"]*\)".*|https://felenasoft.com\1|')
   VERSION=$(curl -s $VERSION_URL | grep 'var version_beta ' | sed 's/.*"\(.*\)".*/\1/')
+
+  if [[ "$VERSION" == "" ]]; then
+      (>&2 echo "Failed to download beta version from $LATEST_VERSIONS_URL, $VERSION_URL")
+      exit 1
+  fi
+
   echo "$VERSION"
 }
 
@@ -49,6 +60,11 @@ function download_xeoma {
     LOCAL_FILE="$DOWNLOAD_LOCATION/xeoma_from_url.tgz"
   else
     LOCAL_FILE="$DOWNLOAD_LOCATION/xeoma_${version}.tgz"
+  fi
+
+  if [[ -e "$LOCAL_FILE" && -z "$LOCAL_FILE" ]]; then
+    echo "$(ts) Downloaded file $LOCAL_FILE exists, but is empty. Deleting it"
+    rm -f "$LOCAL_FILE"
   fi
 
   if [[ -e "$LOCAL_FILE" ]]; then
