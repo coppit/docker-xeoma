@@ -31,7 +31,7 @@ rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
 COPY xeoma.conf.default /files/
 
 # Set up start up scripts
-COPY 30_default_config_file.sh 40_install_xeoma.sh 50_configure_xeoma.sh /etc/my_init.d/
+COPY 30_default_config_file.sh 40_install_xeoma.py 50_configure_xeoma.sh /etc/my_init.d/
 
 # And a cron job for updating Xeoma
 COPY update_xeoma.sh /etc/cron.hourly/update_xeoma
@@ -43,3 +43,4 @@ RUN chmod +x /etc/service/xeoma/run
 VOLUME [ "/config", "/archive" ]
 
 EXPOSE 8090
+EXPOSE 10090
