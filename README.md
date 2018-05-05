@@ -1,6 +1,6 @@
 # docker-xeoma
 
-This is a Docker container for running [Xeoma](http://felenasoft.com/xeoma/en/), surveillance software developed by Felena Soft. It supports a wide range of security cameras, has low CPU overhead, and a very easy-to-use interface. The container is just for the server, and does not have a user interface. Run the client on any computer or mobile device, connecting to the server on port 8090.
+This is a Docker container for running [Xeoma](http://felenasoft.com/xeoma/en/), surveillance software developed by Felena Soft. It supports a wide range of security cameras, has low CPU overhead, and a very easy-to-use interface. The container is just for the server, and does not have a user interface. Run the client on any computer or mobile device, connecting to the server on port 8090. You can also [configure Xeoma's cameras](https://felenasoft.com/xeoma/en/articles/transmitter/) to be shown in the web UI, which is accessible on port 10090.
 
 This docker image is available [on Docker Hub](https://hub.docker.com/r/coppit/xeoma/).
 
@@ -10,7 +10,7 @@ You can try out Xeoma using the trial version of the software, then purchase it 
 
 To launch the container:
 
-`docker run -d --name=Xeoma -p 8090:8090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
+`docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
 When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see below). Then rerun the command. If you prefer to set environment variables for your docker container instead of using the configuration file, simply comment out the vars in the xeoma.conf by prepending a "#" character. Note that the file needs to exist, or the container will recreate it.
 
