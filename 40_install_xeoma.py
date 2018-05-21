@@ -176,7 +176,7 @@ def install_xeoma(local_file):
       logging.info('Skipping installation because the currently installed version is the correct one')
       return
 
-    logging.info('Installing Xeoma from $local_file')
+    logging.info('Installing Xeoma from {}'.format(local_file))
 
     pathlib.Path(INSTALL_LOCATION).mkdir(parents=True, exist_ok=True) 
 
