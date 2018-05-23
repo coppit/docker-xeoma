@@ -64,6 +64,8 @@ def read_version_from_config(config_file):
 #-----------------------------------------------------------------------------------------------------------------------
 
 def latest_version(beta=False):
+    logging.info('Fetching version information from Felenasoft at {}'.format(VERSION_URL))
+
     beta_string = 'beta/' if beta else ''
 
     e = xml.etree.ElementTree.ElementTree(file=urllib.request.urlopen(VERSION_URL)).getroot()
@@ -81,7 +83,11 @@ def latest_version(beta=False):
 #-----------------------------------------------------------------------------------------------------------------------
 
 def resolve_download_info():
+    logging.info('Determining version of Xeoma to use')
+
     version = read_version_from_config(CONFIG_FILE)
+
+    logging.info('Config version is "{}"'.format(version))
 
     version = 'latest' if version == '' else version
 
@@ -136,11 +142,13 @@ def download_xeoma(version_number, download_url, alternate_download_url):
                 contents = f.read()
                 return string in contents
 
+        logging.info('Downloading from {}'.format(url))
+
         urllib.request.urlretrieve(url, TEMP_FILE)
 
         if not string_in_file(b'file not found', TEMP_FILE):
             os.rename(TEMP_FILE, local_file)
-            logging.info('Downloaded to {}...'.format(local_file))
+            logging.info('Downloaded to {}'.format(local_file))
             return True
 
         if os.path.exists(TEMP_FILE): os.remove(TEMP_FILE)
