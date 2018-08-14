@@ -32,6 +32,11 @@ mkdir -p /.config
 # Delete before creating the symlinks, for two reasons: (1) the symlink might be left-over from a previous container (and
 # therefore invalid in this container), and (2) if the container is restarted, there will already be a symlink, causing
 # a new symlink like /usr/local/Xeoma/config/config
+
+# NOTE: Around version 18.7.10 /.config is no longer used. Instead /usr/local/Xeoma is used whether or not the software
+# is installed.
+
+# Old code below (for backwards compatibility)
 rm -f /.config/Xeoma
 ln -s /config /.config/Xeoma
 
@@ -40,6 +45,13 @@ ln -s /archive /config/XeomaArchive
 
 # Clean up any mess from before
 rm -f /config/config
+
+# New code below.
+rm -f /usr/local/Xeoma
+ln -s /config /usr/local/Xeoma
+
+rm -f /usr/local/Xeoma/XeomaArchive
+ln -s /archive /usr/local/Xeoma/XeomaArchive
 
 #-----------------------------------------------------------------------------------------------------------------------
 
