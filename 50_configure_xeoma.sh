@@ -1,19 +1,18 @@
 #!/bin/bash
 
-set -e
-
-FIXED_CONFIG_FILE=/tmp/xeoma.conf
 MAC_FILE=/config/macs.txt
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+. /etc/envvars.merged
+
+set -e
 
 #-----------------------------------------------------------------------------------------------------------------------
 
 function ts {
   echo [`date '+%b %d %X'`]
 }
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-source "$FIXED_CONFIG_FILE"
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -26,27 +25,27 @@ echo "$(ts) $iface $mac_address" >> "$MAC_FILE"
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-# If we were to install Xeoma, it would run in /usr/local/Xeoma. But we're not, so it runs in /.config
-mkdir -p /.config
-
 # Delete before creating the symlinks, for two reasons: (1) the symlink might be left-over from a previous container (and
 # therefore invalid in this container), and (2) if the container is restarted, there will already be a symlink, causing
 # a new symlink like /usr/local/Xeoma/config/config
 
+# Clean up any mess from before
+rm -f /config/config
+
 # NOTE: Around version 18.7.10 /.config is no longer used. Instead /usr/local/Xeoma is used whether or not the software
 # is installed.
 
-# Old code below (for backwards compatibility)
+# == Old code below (for backwards compatibility)
+# If we were to install Xeoma, it would run in /usr/local/Xeoma. But we're not, so it runs in /.config
+mkdir -p /.config
+
 rm -f /.config/Xeoma
 ln -s /config /.config/Xeoma
 
 rm -f /config/XeomaArchive
 ln -s /archive /config/XeomaArchive
 
-# Clean up any mess from before
-rm -f /config/config
-
-# New code below.
+# == New code below.
 rm -f /usr/local/Xeoma
 ln -s /config /usr/local/Xeoma
 
