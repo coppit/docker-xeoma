@@ -8,15 +8,11 @@ You can try out Xeoma using the trial version of the software, then purchase it 
 
 ## Running
 
-There are two modes of running this container. The first is with environment variables:
-
-`docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive -e VERSION='latest' -e PASSWORD='<password>' coppit/xeoma`
-
-The second mode is with a config file. To create a template config file, run:
+To launch the container:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
-When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see below). Then rerun the command.
+When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see below). Then rerun the command. If you prefer to set environment variables for your docker container instead of using the configuration file, simply comment out the vars in the xeoma.conf by prepending a "#" character. Note that the file needs to exist, or the container will recreate it.
 
 The archive folder holds the saved video recordings.
 

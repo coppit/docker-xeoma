@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# These need to match 40_install_xeoma
+# These need to match 40_install_xeoma.sh
 INSTALL_LOCATION=/files/xeoma
 LAST_INSTALLED_BREADCRUMB=$INSTALL_LOCATION/last_installed_version.txt
 
@@ -26,7 +26,7 @@ echo "$(ts) Attempting to auto-update Xeoma"
 
 echo "vvvvvvvvvvvvvvvvvvv"
 last_installed_version=$(get_installed_version)
-/etc/run_once/40_install_xeoma 
+bash /etc/my_init.d/40_install_xeoma.sh 
 new_installed_version=$(get_installed_version)
 echo "^^^^^^^^^^^^^^^^^^^"
 
