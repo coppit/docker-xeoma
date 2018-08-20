@@ -14,7 +14,6 @@ import pathlib
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-CONFIG_FILE = '/config/xeoma.conf'
 DOWNLOAD_LOCATION = '/config/downloads'
 
 VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version2.xml'
@@ -27,39 +26,9 @@ LAST_INSTALLED_BREADCRUMB = '{}/last_installed_version.txt'.format(INSTALL_LOCAT
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-def remove_linefeeds(input_filename):
-    temp = tempfile.NamedTemporaryFile(delete=False)
-
-    with open(input_filename, "r") as input_file:
-        with open(temp.name, "w") as output_file:
-            for line in input_file:
-                output_file.write(line)
-
-    return temp.name
-
-#-----------------------------------------------------------------------------------------------------------------------
-
-def read_version_from_config(config_file):
-    config_file = remove_linefeeds(config_file)
-
-    # Shenanigans to read docker env vars, and the bash format config file. I didn't want to ask them to change their
-    # config files.
-    dump_command = '{} -c "import os, json;print(json.dumps(dict(os.environ)))"'.format(sys.executable)
-
-    pipe = subprocess.Popen(['/bin/bash', '-c', dump_command], stdout=subprocess.PIPE)
-    string = pipe.stdout.read().decode('ascii')
-    base_env = json.loads(string)
-
-    source_command = 'source {}'.format(config_file)
-    pipe = subprocess.Popen(['/bin/bash', '-c', 'set -a && {} && {}'.format(source_command,dump_command)],
-        stdout=subprocess.PIPE)
-    string = pipe.stdout.read().decode('ascii')
-    config_env = json.loads(string)
-
-    env = config_env.copy()
-    env.update(base_env)
-
-    return env["VERSION"]
+def read_version_from_config():
+    pipe = subprocess.Popen(['/bin/bash', '-c', '. /etc/envvars.merged; echo -n "$VERSION"'], stdout=subprocess.PIPE)
+    return pipe.stdout.read().decode('ascii')
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -85,7 +54,7 @@ def latest_version(beta=False):
 def resolve_download_info():
     logging.info('Determining version of Xeoma to use')
 
-    version = read_version_from_config(CONFIG_FILE)
+    version = read_version_from_config()
 
     logging.info('Config version is "{}"'.format(version))
 
