@@ -22,6 +22,8 @@ The archive folder holds the saved video recordings.
 
 To access your xeoma server, simply download the same version from [the Xeoma website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of the docker host and the password you selected.
 
+NOTE: If you're opening port 10090 for the web server, you need to actually add the web server to at least one camera. Otherwise you'll get a "404 Not Found" message when you access the webpage with a browser.
+
 See the notes below for special networking considerations depending on your cameras, and for licensing issues.
 
 View logs using:
