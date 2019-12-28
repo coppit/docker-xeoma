@@ -20,13 +20,19 @@ When run for the first time, a file named xeoma.conf will be created in the conf
 
 The archive folder holds the saved video recordings.
 
-To access your xeoma server, simply download the same version from [the Xeoma website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of the docker host and the password you selected. 
+To access your xeoma server, simply download the same version from [the Xeoma website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of the docker host and the password you selected.
 
 See the notes below for special networking considerations depending on your cameras, and for licensing issues.
 
 View logs using:
 
 `docker logs xeoma`
+
+## Using an Archive Cache
+
+You can optionally use a folder for temporary storage of recording files until they are fully recorded, then moved to the archive. Using this parameter significantly reduces disk fragmentation. This can be useful for a large number of cameras, or when using an SSD for the main archive.
+
+To use this feature, simply add an additional option when running the container: `-v /local/path/to/archive-cache:/archive-cache`.
 
 ## Choosing a Version
 

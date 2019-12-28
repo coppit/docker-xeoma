@@ -46,3 +46,6 @@ RUN chmod +x /etc/cron.hourly/update_xeoma
 
 COPY xeoma.sh /etc/service/xeoma/run
 RUN chmod +x /etc/service/xeoma/run
+
+RUN mkdir /archive-cache && \
+echo 'This is a placeholder to detect when a host volume is mapped to /archive-cache' > /archive-cache/4vagl0js6k
