@@ -70,8 +70,6 @@ create_and_validate_config_file() {
   # Translate line endings, since they may have edited the file in Windows
   SAFE_CONFIG_FILE=$(mktemp)
   tr -d '\r' < "$CONFIG_FILE" > "$SAFE_CONFIG_FILE"
-
-  echo "$SAFE_CONFIG_FILE"
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
