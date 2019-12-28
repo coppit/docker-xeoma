@@ -50,6 +50,7 @@ all_required_settings_exist() {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+# Side effect: Sets SAFE_CONFIG_FILE
 create_and_validate_config_file() {
   # Search for config file. If it doesn't exist, copy the default one
   if [ ! -f "$CONFIG_FILE" ]; then
@@ -67,11 +68,10 @@ create_and_validate_config_file() {
   fi
 
   # Translate line endings, since they may have edited the file in Windows
-  PROCESSED_CONFIG_FILE=$(mktemp)
+  SAFE_CONFIG_FILE=$(mktemp)
+  tr -d '\r' < "$CONFIG_FILE" > "$SAFE_CONFIG_FILE"
 
-  tr -d '\r' < "$CONFIG_FILE" > "$PROCESSED_CONFIG_FILE"
-
-  echo "$PROCESSED_CONFIG_FILE"
+  echo "$SAFE_CONFIG_FILE"
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ then
   exit 0
 fi
 
-SAFE_CONFIG_FILE=$(create_and_validate_config_file)
+create_and_validate_config_file
 
 merge_config_vars_and_env_vars $SAFE_CONFIG_FILE
 
