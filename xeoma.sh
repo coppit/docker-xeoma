@@ -10,6 +10,9 @@ function ts {
 
 echo "$(ts) Starting the server in 5 seconds. See the log directory in your config directory for server logs."
 
+# Fire off the delayed permissions setting manually
+/etc/cron.hourly/update-permissions.sh &
+
 if [[ -e /archive-cache/4vagl0js6k ]]
 then
     echo "$(ts) Not using archive cache"
