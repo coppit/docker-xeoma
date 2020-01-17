@@ -18,3 +18,6 @@ else
     echo "$(ts) Using archive cache"
     /usr/bin/xeoma -core -service -log -startdelay 5 -archivecache /archive-cache
 fi
+
+sleep 3
+chmod -R og-w /config
