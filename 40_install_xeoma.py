@@ -16,7 +16,7 @@ import pathlib
 
 DOWNLOAD_LOCATION = '/config/downloads'
 
-VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version2.xml'
+VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version3.xml'
 VERSION_DOWNLOAD_URL = 'https://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_{}.tgz'
 
 # These need to match update_xeoma.sh
@@ -35,9 +35,15 @@ def read_version_from_config():
 def latest_version(beta=False):
     logging.info('Fetching version information from Felenasoft at {}'.format(VERSION_URL))
 
-    beta_string = 'beta/' if beta else ''
-
     e = xml.etree.ElementTree.ElementTree(file=urllib.request.urlopen(VERSION_URL)).getroot()
+
+    beta_string = ''
+    if beta:
+        if e.find('beta/version'):
+            beta_string = 'beta/'
+        else:
+            logging.info('Could not find beta version information from Felenasoft at {}. Using non-beta version'.format(
+                VERSION_URL))
 
     version_number = e.find('{}version'.format(beta_string)).text
 
@@ -93,7 +99,7 @@ def download_xeoma(version_number, download_url, alternate_download_url):
         logging.info('Downloaded file {} already exists. Skipping download'.format(local_file))
         return local_file
 
-    pathlib.Path(DOWNLOAD_LOCATION).mkdir(parents=True, exist_ok=True) 
+    pathlib.Path(DOWNLOAD_LOCATION).mkdir(parents=True, exist_ok=True)
 
     logging.info('Deleting files in {} to reclaim space...'.format(DOWNLOAD_LOCATION))
 
@@ -121,7 +127,7 @@ def download_xeoma(version_number, download_url, alternate_download_url):
             return True
 
         if os.path.exists(TEMP_FILE): os.remove(TEMP_FILE)
-        
+
         return False
 
     if do_download(download_url): return local_file
@@ -144,7 +150,7 @@ def install_xeoma(local_file):
             last_installed_version = f.read()
     else:
         last_installed_version = None
-        
+
     m = hashlib.md5();
     m.update(open(local_file, 'rb').read());
 
@@ -156,7 +162,7 @@ def install_xeoma(local_file):
 
     logging.info('Installing Xeoma from {}'.format(local_file))
 
-    pathlib.Path(INSTALL_LOCATION).mkdir(parents=True, exist_ok=True) 
+    pathlib.Path(INSTALL_LOCATION).mkdir(parents=True, exist_ok=True)
 
     subprocess.run(['tar', '-xzf', local_file, '-C', INSTALL_LOCATION], stdout=subprocess.DEVNULL, check=True)
 

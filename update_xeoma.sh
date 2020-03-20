@@ -26,7 +26,7 @@ echo "$(ts) Attempting to auto-update Xeoma"
 
 echo "vvvvvvvvvvvvvvvvvvv"
 last_installed_version=$(get_installed_version)
-bash /etc/my_init.d/40_install_xeoma.sh 
+/etc/my_init.d/40_install_xeoma.py
 new_installed_version=$(get_installed_version)
 echo "^^^^^^^^^^^^^^^^^^^"
 
