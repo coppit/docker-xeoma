@@ -16,6 +16,11 @@ function ts {
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+if [ -n "$MAC_ADDRESS" ]; then
+  echo "$(ts) Setting container mac address to $MAC_ADDRESS"
+  ip link set eth0 address $MAC_ADDRESS
+fi
+
 # Save some information about the interface that talks to the internet, in case we need it later.
 
 # Have to parse /proc/net/route because there is no "ip" to do this: iface=$(ip route show default | awk '/default/ {print $5}')
