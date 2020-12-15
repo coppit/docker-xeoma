@@ -17,7 +17,9 @@ echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache && \
 \
 # Install prerequisites
 apt-get update && \
-apt-get install -qy libasound2 wget && \
+apt-get install -qy tzdata libasound2 wget && \
+\
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
 \
 # clean up
 apt-get clean && \
