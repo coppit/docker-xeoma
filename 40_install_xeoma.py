@@ -16,7 +16,7 @@ import pathlib
 
 DOWNLOAD_LOCATION = '/config/downloads'
 
-VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version3.xml'
+VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version.xml'
 VERSION_DOWNLOAD_URL = 'https://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_{}.tgz'
 
 # These need to match update_xeoma.sh
