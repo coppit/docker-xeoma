@@ -17,7 +17,7 @@ echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache && \
 \
 # Install prerequisites
 apt-get update && \
-apt-get install -qy tzdata libasound2 wget && \
+apt-get install -qy iproute2 tzdata libasound2 wget && \
 \
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
 \
