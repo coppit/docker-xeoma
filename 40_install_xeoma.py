@@ -17,7 +17,7 @@ import pathlib
 DOWNLOAD_LOCATION = '/config/downloads'
 
 VERSION_URL = 'http://felenasoft.com/xeoma/downloads/version3.xml'
-VERSION_DOWNLOAD_URL = 'https://felenasoft.com/xeoma/downloads/xeoma_previous_versions/?get=xeoma_linux64_{}.tgz'
+VERSION_DOWNLOAD_URL = 'https://felenasoft.com/xeoma/downloads/{}/linux/xeoma_linux64.tgz'
 
 # These need to match update_xeoma.sh
 INSTALL_LOCATION = '/files/xeoma'
@@ -79,7 +79,7 @@ def resolve_download_info():
     # A version like "17.5.5"
     else:
         version_number = version
-        download_url = VERSION_DOWNLOAD_URL.format(version_number)
+        download_url = VERSION_DOWNLOAD_URL.format(version_number.replace('.', '-'))
         alternate_download_url = None
         version_string = '{} (a user-specified version)'.format(version_number)
 
