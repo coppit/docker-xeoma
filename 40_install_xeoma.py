@@ -49,7 +49,7 @@ def latest_version(beta=False):
 
     download_url = e.find('{}platform[@name="linux64"]'.format(beta_string)).find('url').text
 
-    alternate_download_url = VERSION_DOWNLOAD_URL.format(version_number)
+    alternate_download_url = VERSION_DOWNLOAD_URL.format(version_number.replace('.', '-'))
 
     # There's a size field in the XML, but it doesn't appear to be correct.
 
