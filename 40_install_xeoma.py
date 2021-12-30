@@ -79,7 +79,10 @@ def resolve_download_info():
     # A version like "17.5.5"
     else:
         version_number = version
-        download_url = VERSION_DOWNLOAD_URL.format(version_number.replace('.', '-'))
+        # update from version in format 21.18.11, to download url in format 2021-18-11
+        version_string = "20" + version_number.replace('.', '-')
+        
+        download_url = VERSION_DOWNLOAD_URL.format(version_string)
         alternate_download_url = None
         version_string = '{} (a user-specified version)'.format(version_number)
 
