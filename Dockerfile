@@ -8,24 +8,24 @@ ENV TERM=xterm-256color
 CMD ["/sbin/my_init"]
 
 RUN true && \
-\
-DEBIAN_FRONTEND=noninteractive && \
-\
-# Speed up APT
-echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup && \
-echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache && \
-\
-# Install prerequisites
-apt-get update && \
-apt-get install -qy libasound2 iproute2 wget && \
-\
-# clean up
-apt-get clean && \
-rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-/usr/share/man /usr/share/groff /usr/share/info \
-/usr/share/lintian /usr/share/linda /var/cache/man && \
-(( find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true )) && \
-(( find /usr/share/doc -empty|xargs rmdir || true ))
+  \
+  DEBIAN_FRONTEND=noninteractive && \
+  \
+  # Speed up APT
+  echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup && \
+  echo "Acquire::http {No-Cache=True;};" > /etc/apt/apt.conf.d/no-cache && \
+  \
+  # Install prerequisites
+  apt-get update && \
+  apt-get install -qy libasound2 iproute2 wget && \
+  \
+  # clean up
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  /usr/share/man /usr/share/groff /usr/share/info \
+  /usr/share/lintian /usr/share/linda /var/cache/man && \
+  (( find /usr/share/doc -depth -type f ! -name copyright|xargs rm || true )) && \
+  (( find /usr/share/doc -empty|xargs rmdir || true ))
 
 VOLUME [ "/config", "/archive" ]
 
@@ -44,8 +44,12 @@ RUN chmod +x /etc/my_init.d/30_parse_config_file.sh /etc/my_init.d/40_install_xe
 COPY update_xeoma.sh /etc/cron.hourly/update_xeoma
 RUN chmod +x /etc/cron.hourly/update_xeoma
 
+# Script to set permissions to not be world-writable
+COPY update-permissions.sh /etc/cron.hourly/update-permissions.sh
+RUN chmod +x /etc/cron.hourly/update-permissions.sh
+
 COPY xeoma.sh /etc/service/xeoma/run
 RUN chmod +x /etc/service/xeoma/run
 
 RUN mkdir /archive-cache && \
-echo 'This is a placeholder to detect when a host volume is mapped to /archive-cache' > /archive-cache/4vagl0js6k
+  echo 'This is a placeholder to detect when a host volume is mapped to /archive-cache' > /archive-cache/4vagl0js6k
