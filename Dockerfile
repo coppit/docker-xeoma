@@ -17,7 +17,7 @@ RUN true && \
   \
   # Install prerequisites
   apt-get update && \
-  apt-get install -qy libasound2 wget && \
+  apt-get install -qy libasound2 iproute2 wget && \
   \
   # clean up
   apt-get clean && \
