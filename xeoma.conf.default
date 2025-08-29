@@ -1,5 +1,5 @@
 # The password for clients to use to connect. Avoid backslashes and apostrophes.
 PASSWORD='YOUR_PASSWORD'
 
-# The version to use. Valid values are a string like '17.5.5', 'latest', 'latest_beta', or a URL.
+# The version to use. Valid values are a string like '25.8.22', 'latest', 'latest_beta', or a URL.
 VERSION='latest'
