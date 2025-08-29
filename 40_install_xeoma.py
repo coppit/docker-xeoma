@@ -22,7 +22,7 @@ VERSION_DOWNLOAD_URL = 'https://felenasoft.com/xeoma/downloads/{}/linux/xeoma_li
 # These need to match update_xeoma.sh
 INSTALL_LOCATION = '/files/xeoma'
 XEOMA_BINARY = '/usr/bin/xeoma'
-LAST_INSTALLED_BREADCRUMB = '{}/last_installed_version.txt'.format(INSTALL_LOCATION)
+LAST_INSTALLED_BREADCRUMB = f'{INSTALL_LOCATION}/last_installed_version.txt'
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ def read_version_from_config():
 #-----------------------------------------------------------------------------------------------------------------------
 
 def latest_version(beta=False):
-    logging.info('Fetching version information from Felenasoft at {}'.format(VERSION_URL))
+    logging.info(f'Fetching version information from Felenasoft at {VERSION_URL}')
 
     e = xml.etree.ElementTree.ElementTree(file=urllib.request.urlopen(VERSION_URL)).getroot()
 
@@ -42,12 +42,11 @@ def latest_version(beta=False):
         if e.find('beta/version'):
             beta_string = 'beta/'
         else:
-            logging.info('Could not find beta version information from Felenasoft at {}. Using non-beta version'.format(
-                VERSION_URL))
+            logging.info(f'Could not find beta version information from Felenasoft at {VERSION_URL}. Using non-beta version')
 
-    version_number = e.find('{}version'.format(beta_string)).text
+    version_number = e.find(f'{beta_string}version').text
 
-    download_url = e.find('{}platform[@name="linux64"]'.format(beta_string)).find('url').text
+    download_url = e.find(f'{beta_string}platform[@name="linux64"]').find('url').text
 
     alternate_download_url = VERSION_DOWNLOAD_URL.format(version_number.replace('.', '-'))
 
@@ -62,31 +61,32 @@ def resolve_download_info():
 
     version = read_version_from_config()
 
-    logging.info('Config version is "{}"'.format(version))
+    logging.info(f'Config version is "{version}"')
 
     version = 'latest' if version == '' else version
 
     if version == 'latest':
         version_number, download_url, alternate_download_url = latest_version()
-        version_string = '{} (the latest stable version)'.format(version_number)
+        version_string = f'{version_number} (the latest stable version)'
     elif version == 'latest_beta':
         version_number, download_url, alternate_download_url = latest_version(beta=True)
-        version_string = '{} (the latest beta version)'.format(version_number)
+        version_string = f'{version_number} (the latest beta version)'
     elif version.split('://')[0] in ['http', 'https', 'ftp']:
         download_url = version
         version_number, alternate_download_url = None, None
-        version_string = 'from url ({})'.format(download_url)
+        version_string = f'from url ({download_url})'
     # A version like "17.5.5"
     else:
         version_number = version
+
         # update from version in format 21.18.11, to download url in format 2021-18-11
         version_string = "20" + version_number.replace('.', '-')
-        
+
         download_url = VERSION_DOWNLOAD_URL.format(version_string)
         alternate_download_url = None
-        version_string = '{} (a user-specified version)'.format(version_number)
+        version_string = f'{version_number} (a user-specified version)'
 
-    logging.info('Using Xeoma version {}'.format(version_string))
+    logging.info(f'Using Xeoma version {version_string}')
 
     return version_number, download_url, alternate_download_url
 
@@ -94,25 +94,25 @@ def resolve_download_info():
 
 def download_xeoma(version_number, download_url, alternate_download_url):
     if version_number:
-        local_file = '{}/xeoma_{}.tgz'.format(DOWNLOAD_LOCATION, version_number)
+        local_file = f'{DOWNLOAD_LOCATION}/xeoma_{version_number}.tgz'
     else:
-        local_file = '{}/xeoma_from_url.tgz'.format(DOWNLOAD_LOCATION)
+        local_file = f'{DOWNLOAD_LOCATION}/xeoma_from_url.tgz'
 
     if os.path.exists(local_file):
-        logging.info('Downloaded file {} already exists. Skipping download'.format(local_file))
+        logging.info(f'Downloaded file {local_file} already exists. Skipping download')
         return local_file
 
     pathlib.Path(DOWNLOAD_LOCATION).mkdir(parents=True, exist_ok=True)
 
-    logging.info('Deleting files in {} to reclaim space...'.format(DOWNLOAD_LOCATION))
+    logging.info(f'Deleting files in {DOWNLOAD_LOCATION} to reclaim space...')
 
-    for existing_file in glob.glob('{}/xeoma_*.tgz'.format(DOWNLOAD_LOCATION)):
-        logging.info('Deleting {}'.format(existing_file))
+    for existing_file in glob.glob(f'{DOWNLOAD_LOCATION}/xeoma_*.tgz'):
+        logging.info(f'Deleting {existing_file}')
         os.remove(existing_file)
 
-    TEMP_FILE = '{}/xeoma_temp.tgz'.format(DOWNLOAD_LOCATION)
+    TEMP_FILE = f'{DOWNLOAD_LOCATION}/xeoma_temp.tgz'
 
-    logging.info('Downloading from {} into {}'.format(download_url, DOWNLOAD_LOCATION))
+    logging.info(f'Downloading from {download_url} into {DOWNLOAD_LOCATION}')
 
     def do_download(url):
         def string_in_file(string, filename):
@@ -120,13 +120,13 @@ def download_xeoma(version_number, download_url, alternate_download_url):
                 contents = f.read()
                 return string in contents
 
-        logging.info('Downloading from {}'.format(url))
+        logging.info(f'Downloading from {url}')
 
         urllib.request.urlretrieve(url, TEMP_FILE)
 
         if not string_in_file(b'file not found', TEMP_FILE):
             os.rename(TEMP_FILE, local_file)
-            logging.info('Downloaded to {}'.format(local_file))
+            logging.info(f'Downloaded to {local_file}')
             return True
 
         if os.path.exists(TEMP_FILE): os.remove(TEMP_FILE)
@@ -141,8 +141,7 @@ def download_xeoma(version_number, download_url, alternate_download_url):
 
         if do_download(alternate_download_url): return local_file
 
-    logging.error('Could not download Xeoma version "{}" from {} or {}'.format(version_number, download_url,
-        alternate_download_url))
+    logging.error(f'Could not download Xeoma version "{version_number}" from {download_url} or {alternate_download_url}')
     sys.exit(1)
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -163,7 +162,7 @@ def install_xeoma(local_file):
       logging.info('Skipping installation because the currently installed version is the correct one')
       return
 
-    logging.info('Installing Xeoma from {}'.format(local_file))
+    logging.info(f'Installing Xeoma from {local_file}')
 
     pathlib.Path(INSTALL_LOCATION).mkdir(parents=True, exist_ok=True)
 
@@ -171,7 +170,7 @@ def install_xeoma(local_file):
 
     if os.path.exists(XEOMA_BINARY): os.remove(XEOMA_BINARY)
 
-    os.symlink('{}/xeoma.app'.format(INSTALL_LOCATION), XEOMA_BINARY)
+    os.symlink(f'{INSTALL_LOCATION}/xeoma.app', XEOMA_BINARY)
 
     with open(LAST_INSTALLED_BREADCRUMB, 'w') as f:
         f.write(current_version)
