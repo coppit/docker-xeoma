@@ -8,11 +8,11 @@ You can try out Xeoma using the trial version of the software, then purchase it 
 
 ## Running
 
-There are two modes of running this container. The first is with environment variables:
+You can either use environment variables or a configuration file to configure this container. With environment variables:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive -e VERSION='latest' -e PASSWORD='<password>' coppit/xeoma`
 
-The second mode is with a config file. To create a template config file, run:
+To create a template config file instead, run:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
