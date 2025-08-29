@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.11
+FROM phusion/baseimage:noble-1.0.2
 
 MAINTAINER David Coppit <david@coppit.org>
 
@@ -17,7 +17,7 @@ RUN true && \
   \
   # Install prerequisites
   apt-get update && \
-  apt-get install -qy libasound2 iproute2 wget && \
+  apt-get install -qy libasound2t64 iproute2 wget && \
   \
   # clean up
   apt-get clean && \
