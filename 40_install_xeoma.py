@@ -39,7 +39,7 @@ def latest_version(beta=False):
 
     beta_string = ''
     if beta:
-        if e.find('beta/version'):
+        if e.find('beta/version') is not None:
             beta_string = 'beta/'
         else:
             logging.info(f'Could not find beta version information from Felenasoft at {VERSION_URL}. Using non-beta version')
