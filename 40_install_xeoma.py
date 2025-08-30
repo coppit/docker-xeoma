@@ -179,7 +179,7 @@ def install_xeoma(local_file):
 
 #-----------------------------------------------------------------------------------------------------------------------
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='[%Y-%m-%d %H:%M:%S]')
 
 version_number, download_url, alternate_download_url = resolve_download_info()
 
