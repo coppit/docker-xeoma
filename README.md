@@ -56,7 +56,7 @@ Be careful about choosing your networking settings before installing your licens
 
 However, if you have any issues, the container will append some information about the MAC address to the file macs.txt each time it starts. If you have trouble getting the license to work, try using the `--mac-address` flag to the run command to force your new container to have the same MAC address as your old one. This will only work if you are using bridged networking.
 
-Alternatively, or if you are running in a Kubernetes and cannot set your mac address, you can set the MAC_ADDRESS variable in the xeoma.conf file.  The container will set its own MAC address at startup.
+Alternatively, or if you are running in a Kubernetes and cannot set your mac address, you can set the MAC_ADDRESS variable, either in the container environment or in the xeoma.conf file.  The container will set its own MAC address at startup.
 
 Finally, if all else fails, [use the felenasoft website for help](http://felenasoft.com/xeoma/en/support/activation-issues/).
 

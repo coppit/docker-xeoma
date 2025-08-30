@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAC_FILE=/config/macs.txt
+MACS_FILE=/config/macs.txt
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -22,11 +22,9 @@ if [ -n "$MAC_ADDRESS" ]; then
 fi
 
 # Save some information about the interface that talks to the internet, in case we need it later.
-
-# Have to parse /proc/net/route because there is no "ip" to do this: iface=$(ip route show default | awk '/default/ {print $5}')
-iface=$(grep -E '^\S+\s+00000000' /proc/net/route | awk '{print $1}')
+iface=$(ip route show default | awk '/default/ {print $5}')
 mac_address=$(cat /sys/class/net/$iface/address)
-echo "$(ts) $iface $mac_address" >> "$MAC_FILE"
+echo "$(ts) $iface $mac_address" >> "$MACS_FILE"
 
 #-----------------------------------------------------------------------------------------------------------------------
 
