@@ -77,12 +77,15 @@ create_and_validate_config_file() {
 merge_config_vars_and_env_vars() {
   SAFE_CONFIG_FILE=$1
 
+  # Temporarily auto-export the variables we get from the files
+  set -a
+
   . "$SAFE_CONFIG_FILE"
-  export $(grep = "$SAFE_CONFIG_FILE" | grep -v '^ *#' | cut -d= -f1)
 
   # Env vars take precedence
   . "$ENV_VARS"
-  export $(cut -d= -f1 "$ENV_VARS")
+
+  set +a
 }
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -118,5 +121,5 @@ set_default_values
 
 print_config
 
-# Now dump the envvars, in the style that boot.sh does. exec to avoid SHLVL=2
-exec sh -c "export > \"$MERGED_ENV_VARS\""
+# Now dump the envvars, in the style that boot.sh does.
+export > $MERGED_ENV_VARS

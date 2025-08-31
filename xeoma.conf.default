@@ -1,5 +1,8 @@
-# The password for clients to use to connect. Avoid backslashes and apostrophes.
-PASSWORD='YOUR_PASSWORD'
+# The password for clients to use to connect. Replace "YOUR_PASSWORD" with the password you want
+read -r PASSWORD <<'END_OF_PASSWORD' # Don't edit this line, or the "END_OF_PASSWORD" below
+YOUR_PASSWORD
+END_OF_PASSWORD
+
 
 # The version to use. Valid values are a string like '25.8.22', 'latest', 'latest_beta', or a URL.
 VERSION='latest'
