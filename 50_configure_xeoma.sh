@@ -58,7 +58,7 @@ ln -s /archive /usr/local/Xeoma/XeomaArchive
 #-----------------------------------------------------------------------------------------------------------------------
 
 echo "$(ts) Setting the password"
-/usr/bin/xeoma -setpassword "$PASSWORD"
+/usr/bin/xeoma -core -setpassword "$PASSWORD"
 
 # Not sure why this is necessary, but without it, I can't connect to the server
 /usr/bin/xeoma -showpassword > /dev/null 2>&1
