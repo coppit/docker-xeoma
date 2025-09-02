@@ -6,7 +6,8 @@ REQUIRED_SETTINGS="PASSWORD"
 DEFAULT_SETTINGS="VERSION=latest"
 
 TEMPLATE_CONFIG_FILE=/files/xeoma.conf.default
-CONFIG_FILE=/config/xeoma.conf
+CONFIG_PATH=/config
+CONFIG_FILE=$CONFIG_PATH/xeoma.conf
 
 #-----------------------------------------------------------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ print_config() {
   echo "Configuration:"
   echo "  PASSWORD=<hidden>"
   echo "  VERSION=$VERSION"
+  echo "  MAC_ADDRESS=$MAC_ADDRESS"
 }
 
 ########################################################################################################################
@@ -52,6 +54,9 @@ all_required_settings_exist() {
 
 # Side effect: Sets SAFE_CONFIG_FILE
 create_and_validate_config_file() {
+  echo "Copying the latest template config file to $CONFIG_PATH for reference"
+  cp -f "$TEMPLATE_CONFIG_FILE" "$CONFIG_PATH"
+
   # Search for config file. If it doesn't exist, copy the default one
   if [ ! -f "$CONFIG_FILE" ]; then
     echo "Creating config file. Please do not forget to edit it to specify your settings!"
