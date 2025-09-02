@@ -27,6 +27,7 @@ print_config() {
   echo "  PASSWORD=<hidden>"
   echo "  VERSION=$VERSION"
   echo "  MAC_ADDRESS=$MAC_ADDRESS"
+  echo "  Current time and timezone=$(date)"
 }
 
 ########################################################################################################################
@@ -56,6 +57,11 @@ all_required_settings_exist() {
 create_and_validate_config_file() {
   echo "Copying the latest template config file to $CONFIG_PATH for reference"
   cp -f "$TEMPLATE_CONFIG_FILE" "$CONFIG_PATH"
+
+  if [ $? -ne 0 ]; then
+    echo "Could not copy template config file. Is the config share mapped as read-only?"
+    exit 4
+  fi
 
   # Search for config file. If it doesn't exist, copy the default one
   if [ ! -f "$CONFIG_FILE" ]; then
