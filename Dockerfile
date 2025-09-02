@@ -17,7 +17,9 @@ RUN true && \
   \
   # Install prerequisites
   apt-get update && \
-  apt-get install -qy libasound2t64 iproute2 wget && \
+  apt-get install -qy libasound2t64 iproute2 wget tzdata && \
+  \
+  ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
   \
   # clean up
   apt-get clean && \
