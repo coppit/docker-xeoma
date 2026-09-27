@@ -15,7 +15,7 @@ fi
 
 case "${1-}" in
   '')
-    docker buildx build --platform linux/amd64 --load -t coppit/xeoma-test .
+    docker buildx build --platform linux/amd64 --load -t coppit/xeoma:local .
     ;;
   --publish)
     docker buildx build --platform linux/amd64 --push -t coppit/xeoma .
