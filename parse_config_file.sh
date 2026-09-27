@@ -119,12 +119,11 @@ set_default_values() {
 if [ $(all_required_settings_exist) = true ]
 then
   echo "All required settings passed as environment variables. Skipping config file creation."
-  exit 0
+else
+  create_and_validate_config_file
+
+  merge_config_vars_and_env_vars "$SAFE_CONFIG_FILE"
 fi
-
-create_and_validate_config_file
-
-merge_config_vars_and_env_vars $SAFE_CONFIG_FILE
 
 validate_values
 
