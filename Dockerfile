@@ -1,4 +1,4 @@
-FROM phusion/baseimage:resolute-1.0.18
+FROM ghcr.io/linuxserver/baseimage-ubuntu:resolute@sha256:3b5862c04c04d3cf3aed92ac6d4a75e0a36208fd15e2a968563a0c7e11898401
 
 LABEL org.opencontainers.image.authors="David Coppit <david@coppit.org>" \
       org.opencontainers.image.source="https://github.com/coppit/docker-xeoma"
@@ -6,8 +6,8 @@ LABEL org.opencontainers.image.authors="David Coppit <david@coppit.org>" \
 ENV TERM=xterm-256color
 ENV TZ=Etc/UTC
 
-# Use baseimage-docker's init system
-CMD ["/sbin/my_init"]
+# LinuxServer supplies /init and maps abc to PUID/PGID before Xeoma initialization.
+ENV PUID=911 PGID=911 UMASK=022 S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 # Speed up APT and install prerequisites
 RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup && \
@@ -15,7 +15,7 @@ RUN echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup && \
   \
   # Install prerequisites
   apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -qy --no-install-recommends libasound2t64 iproute2 wget tzdata && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -qy --no-install-recommends libasound2t64 iproute2 wget tzdata python3 procps && \
   \
   ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && echo "${TZ}" > /etc/timezone && \
   \
@@ -35,17 +35,12 @@ EXPOSE 10090
 # Create template config file
 COPY xeoma.conf.default /files/
 
-# Set up start up scripts
-COPY --chmod=0755 parse_config_file.sh /etc/my_init.d/30_parse_config_file.sh
-COPY --chmod=0755 40_install_xeoma.py 50_configure_xeoma.sh /etc/my_init.d/
+COPY --chmod=0755 parse_config_file.sh install_xeoma.py configure_xeoma.sh update_xeoma.sh /usr/local/lib/xeoma/
+COPY root/ /
 
-# Add a cron job for updating Xeoma
-COPY --chmod=0755 update_xeoma.sh /etc/cron.hourly/update_xeoma
-
-# Script to set permissions to not be world-writable
-COPY --chmod=0755 update-permissions.sh /etc/cron.hourly/update-permissions
-
-COPY --chmod=0755 xeoma.sh /etc/service/xeoma/run
+# Initialization and supervision through LinuxServer's s6 service graph.
+COPY --chmod=0755 init-xeoma.sh /etc/s6-overlay/s6-rc.d/init-xeoma/run
+COPY --chmod=0755 xeoma.sh /etc/s6-overlay/s6-rc.d/svc-xeoma/run
 
 RUN mkdir /archive-cache && \
   echo 'This is a placeholder to detect when a host volume is mapped to /archive-cache' > /archive-cache/4vagl0js6k

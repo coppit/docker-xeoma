@@ -79,7 +79,7 @@ class XeomaFixture(unittest.TestCase):
 
         self.addCleanup(stop)
         self.url = f"http://127.0.0.1:{self.server.server_port}"
-        source = (ROOT / "40_install_xeoma.py").read_text()
+        source = (ROOT / "install_xeoma.py").read_text()
         self.installer = self.root / "install.py"
         self.installer.write_text(redirect(source, {
             "/config/downloads": self.downloads,

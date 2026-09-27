@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# These need to match 40_install_xeoma.py
+# These need to match install_xeoma.py
 INSTALL_LOCATION=/files/xeoma
 LAST_INSTALLED_BREADCRUMB=$INSTALL_LOCATION/last_installed_version.txt
 
@@ -47,15 +47,16 @@ echo "$(ts) Attempting to auto-update Xeoma"
 
 echo "vvvvvvvvvvvvvvvvvvv"
 last_installed_version=$(get_installed_version)
-/etc/my_init.d/40_install_xeoma.py
+if ! /usr/local/lib/xeoma/install_xeoma.py; then
+  echo "$(ts) Xeoma update failed. Leaving the service running." >&2
+  exit 1
+fi
 new_installed_version=$(get_installed_version)
 echo "^^^^^^^^^^^^^^^^^^^"
 
 if [[ "$last_installed_version" != "$new_installed_version" ]];then
   echo "$(ts) Xeoma has been updated. Restarting the service."
-  pkill xeoma
-
-  # The phusion framework will restart it for us
+  s6-svc -r /run/service/svc-xeoma
 else
   echo "$(ts) Xeoma has not been updated."
 fi

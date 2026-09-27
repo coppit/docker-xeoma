@@ -13,13 +13,13 @@ class UpdateTests(XeomaFixture):
         self.stable = self.archive_bytes("stable")
         self.metadata()
         self.serve("/stable.tgz", self.stable)
-        self.mock_command("pkill", 'printf "%s\\n" "$@" >> "$CALLS/restarts"\n')
+        self.mock_command("s6-svc", 'printf "%s\\n" "$@" >> "$CALLS/restarts"\n')
         self.updater = self.root / "update.sh"
         installer_command = f"{shlex.quote(sys.executable)} -B {shlex.quote(str(self.installer))}"
         self.updater.write_text(redirect((ROOT / "update_xeoma.sh").read_text(), {
             "/files/xeoma": self.install,
             "/etc/envvars.merged": self.merged,
-            "/etc/my_init.d/40_install_xeoma.py": installer_command,
+            "/usr/local/lib/xeoma/install_xeoma.py": installer_command,
         }))
 
     def run_update(self):
@@ -33,7 +33,7 @@ class UpdateTests(XeomaFixture):
         result = self.run_update()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assert_installed(updated, "updated")
-        self.assertEqual((self.calls / "restarts").read_text(), "xeoma\n")
+        self.assertEqual((self.calls / "restarts").read_text(), "-r\n/run/service/svc-xeoma\n")
 
     def test_unchanged_version_does_not_restart(self):
         self.assertEqual(self.run_installer().returncode, 0)
@@ -46,7 +46,7 @@ class UpdateTests(XeomaFixture):
         result = self.run_update()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assert_installed(self.stable, "stable")
-        self.assertEqual((self.calls / "restarts").read_text(), "xeoma\n")
+        self.assertEqual((self.calls / "restarts").read_text(), "-r\n/run/service/svc-xeoma\n")
 
     def test_failed_download_preserves_install_and_does_not_restart(self):
         self.assertEqual(self.run_installer().returncode, 0)
@@ -77,7 +77,7 @@ class UpdateTests(XeomaFixture):
         result = self.run_update()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assert_installed(beta, "beta")
-        self.assertEqual((self.calls / "restarts").read_text(), "xeoma\n")
+        self.assertEqual((self.calls / "restarts").read_text(), "-r\n/run/service/svc-xeoma\n")
 
     def test_pinned_and_custom_versions_skip_installer_even_without_installation(self):
         for version in ("25.8.22", f"{self.url}/stable.tgz"):

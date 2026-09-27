@@ -7,6 +7,9 @@ connecting to the server on port 8090. You can also [configure Xeoma's
 cameras](https://felenasoft.com/xeoma/en/articles/transmitter/) to be shown in the web UI, which is accessible on port
 10090.
 
+The container uses LinuxServer.io's Ubuntu base with s6 supervision. This is an independently maintained Xeoma image;
+application and container support remain with FelenaSoft and this repository, respectively.
+
 This docker image is available [on Docker Hub](https://hub.docker.com/r/coppit/xeoma/).
 
 You can try out Xeoma using the trial version of the software, then purchase it when you are ready. Note the limitations
@@ -16,18 +19,26 @@ you are effectively agreeing to it by running this docker.
 
 ## Running
 
-You can either use environment variables or a configuration file to configure this container. With environment
-variables:
+You can use environment variables or a configuration file to configure this container. For passwords, use
+[a password file](#password-from-a-secret-file), which is more secure than putting the password in an environment
+variable.
 
-`docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive -e VERSION='latest' -e PASSWORD='<password>' coppit/xeoma`
+`docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive -e PUID=1000 -e PGID=1000 -e UMASK=022 -e VERSION='latest' -e PASSWORD='<password>' coppit/xeoma`
 
-To create a template config file instead, run:
+To generate configuration and password files instead, run:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
-When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit.
-Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see
-below). Then rerun the command.
+On first run, the container creates `xeoma.conf` and an empty `xeoma_password` in the config directory, then exits. Put
+only your password in `xeoma_password` with no quotes, escaping, comments, assignments, etc. Trailing newline characters
+are removed. All other characters are read literally. The password file is created with owner-only permissions and an
+existing file is never overwritten. If Xeoma's password-setting command fails, startup stops and the container logs a
+clear error with its exit status. Correct the password and restart. Raw Xeoma diagnostics are withheld because they can
+reveal password fragments.
+
+The generated `xeoma.conf` documents the default password path without defining a password variable. Change `VERSION` or
+`MAC_ADDRESS` there if needed; otherwise leave it unchanged. Restart the container after filling in the password file.
+Existing configurations containing `PASSWORD` continue to work.
 
 The archive folder holds the saved video recordings.
 
@@ -43,6 +54,95 @@ See the notes below for special networking considerations depending on your came
 View logs using:
 
 `docker logs xeoma`
+
+## File Ownership and Permissions
+
+Xeoma runs as LinuxServer's `abc` user, mapped to the numeric `PUID` and `PGID` you provide. Set these to the host user
+and group that should own configuration and recordings. Use `id -u` and `id -g` on the Docker host to find those values.
+Both default to `911`. Set these options as container environment variables, not in `xeoma.conf`; leave Docker's
+`--user` option unset so initialization can prepare storage and then drop privileges for Xeoma.
+
+`UMASK` controls permissions on newly created files. It defaults to `022`; typical settings are:
+
+| UMASK | Files created with mode 666 | Directories created with mode 777 |
+| --- | --- | --- |
+| `022` | Owner writes; everyone reads | Owner writes; everyone reads/traverses |
+| `002` | Owner/group write; everyone reads | Owner/group write; everyone reads/traverses |
+| `007` | Owner/group read and write | Owner/group access only |
+| `077` | Owner access only | Owner access only |
+
+The application may request more restrictive permissions or explicitly change them. UMASK does not add permissions or
+change existing files. The old hourly recursive permission script has been removed so it does not override the
+chosen mask. For example, use `PUID=1000`, `PGID=100`, and `UMASK=007` to share newly created recordings with group 100.
+
+When upgrading from the older Phusion-based image, choose PUID/PGID before starting. The first successful ownership
+migration recursively changes ownership of `/config`, `/archive`, and `/archive-cache`, including existing files. This
+can be a slow operation, so the UID/GID and a checksum record the startup history in `/config/.xeoma-ownership`.
+Subsequent starts will skip this recursive step unless PUID/PGID changes or the history has changed since the previous
+start. (Older images append to `macs.txt` without updating the marker, so downgrading, running an older image, and
+re-upgrading triggers migration again.) Existing permission modes are preserved.
+
+If you replace a storage mount, restore files with different owners, or want to repeat the migration, delete
+`/config/.xeoma-ownership` and restart. The marker does not detect externally added files. Keep the same volume
+mappings and networking/MAC settings to preserve configuration and licensing identity.
+
+## Password from a Secret File
+
+**Recommended:** mount your password file read-only at `/config/xeoma_password`. The container reads this fixed path
+automatically. The file should only contain the password. Existing passwords from the environment or config remain
+supported; a valid password file takes precedence over them.
+
+You can use either or both of these mounts:
+
+```sh
+--mount type=bind,src=/local/path/to/config,dst=/config
+--mount type=bind,src=/local/path/to/secrets/xeoma_password,dst=/config/xeoma_password,readonly
+```
+
+With only the directory mount, the password comes from `/local/path/to/config/xeoma_password`. With both mounts, the
+separate password file appears at `/config/xeoma_password`, hiding any file already there for the container's lifetime.
+The password file mount also works without a host directory mounted at `/config`; this image then uses an anonymous
+config volume. Map `/config` explicitly if you want predictable configuration persistence when recreating the container.
+
+Settings from `xeoma.conf` are loaded first, then environment variables override matching names. Missing settings use
+their defaults. After merging, a valid `/config/xeoma_password` overrides `PASSWORD`. An unreadable or empty file logs a
+warning and falls back to the merged `PASSWORD`; an absent file preserves legacy behavior.
+
+A password in a properly protected `xeoma.conf` remains supported without an environment-password warning and can be
+about as secure as a separately protected password file. Both store plaintext credentials; file-based password loading
+does not itself encrypt them. Restrict access to either file and its backups, and omit credentials when sharing settings.
+A separate secret file makes it easier to mount the credential read-only and keep it outside `/config` and routine
+configuration backups. Its benefit is separation and access control, rather than encryption.
+
+For Docker Compose:
+
+```yaml
+services:
+  xeoma:
+    image: coppit/xeoma
+    ports:
+      - "8090:8090"
+      - "10090:10090"
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      UMASK: "007"
+      VERSION: "latest"
+    volumes:
+      - ./config:/config
+      - ./archive:/archive
+    secrets:
+      - source: xeoma_password
+        target: /config/xeoma_password
+
+secrets:
+  xeoma_password:
+    file: ./secrets/xeoma_password
+```
+
+Create `./secrets/xeoma_password` containing your password and restrict access to that host file. Compose mounts it at
+`/config/xeoma_password`. With `docker run`, use the read-only bind mount shown above. The file is read on each container start; restart after changing it.
+The container does not print the password, though Xeoma still receives it through its password-setting command.
 
 ## Using an Archive Cache
 
@@ -68,9 +168,12 @@ this feature in the user interface, and instead just rely on the container's ver
 specific version of the software, this will prevent Xeoma from auto-updating it if the container restarts. If you're
 using the "latest" version, the container will already auto-update (even without a restart).
 
-The container checks for updates hourly only when `VERSION` is `latest` or `latest_beta`. Pinned versions and custom
-download URLs are skipped by the hourly updater. If the saved version setting is missing or unreadable, the updater
-logs an error and skips the update rather than defaulting to `latest`.
+At startup, the container registers an hourly update job in root's crontab only when the resolved `VERSION` is `latest`
+or `latest_beta`. LinuxServer's built-in cron service runs the job at 17 minutes past each hour; output goes to the
+container logs. Pinned versions and custom download URLs have no hourly update job. Restarting after changing the
+configured version removes any old registration and applies the new setting. The updater also checks the version when
+invoked manually. If the saved version setting is missing or unreadable, the updater logs an error and skips the update
+rather than defaulting to `latest`.
 
 ## Notes
 
@@ -94,7 +197,7 @@ command to force your new container to have the same MAC address as your old one
 bridged networking.
 
 Alternatively, or if you are running in a Kubernetes and cannot set your mac address, you can set the MAC_ADDRESS
-variable, either in the container environment or in the xeoma.conf file.  The container will set its own MAC address at
+variable, either in the container environment or in the xeoma.conf file. The container will set its own MAC address at
 startup. Note that this may require the addition of the `--cap-add=NET_ADMIN` flag.
 
 Finally, if all else fails, [use the felenasoft website for
@@ -106,16 +209,16 @@ Depending on how your security camera works, you might need to enable host netwo
 command. If you are using IP cameras, you can run this container in bridged networking mode, which is more secure.
 However, you will need to manually enter the URL for the camera, because the camera search feature probably won't work.
 You can [consult this website](https://www.ispyconnect.com/sources.aspx) for information about rtsp:// URLs for
-accessing the camera's low and high quality video streams. 
+accessing the camera's low and high quality video streams.
 
 ### Support
 
-If you find any bugs with the software that are related to the docker container, let me know and I'll investigate.  If
+If you find any bugs with the software that are related to the docker container, let me know and I'll investigate. If
 you find bugs that are related to the actual software or cameras, etc then contact FelenaSoft.
 
 ## Running Tests
 
-The default test suite requires Python 3, Bash at `/bin/bash`, `tar`, and standard Unix utilities on macOS or Linux.  It
+The default test suite requires Python 3, Bash at `/bin/bash`, `tar`, and standard Unix utilities on macOS or Linux. It
 uses Python's built-in `unittest` module; no additional Python packages are needed.
 
 From the repository root, run the default suite:
@@ -130,12 +233,13 @@ loopback connections. No external internet access or Docker server is needed for
 
 | Test file | Coverage |
 | --- | --- |
-| `test_config.py` | Collecting settings, defaults, environment precedence, stale settings, and first-run setup |
+| `test_config.py` | Settings, secret files, defaults, environment precedence, stale settings, and first-run setup |
 | `test_build.py` | Development/publish command selection, help, invalid arguments, and Docker command failures |
 | `test_installer.py` | Stable/beta/pinned/custom versions, downloads, fallback, caching, extraction, and failures |
+| `test_init.py` | Conditional hourly-job registration, version changes, and failed startup cleanup |
 | `test_updates.py` | Installing updates, restart requests, unchanged/pinned versions, and failed downloads |
 | `test_configure.py` | Password arguments, MAC handling, storage links, repeated setup, and command failures |
-| `test_docker.py` | Opt-in real image build, Xeoma startup, storage links, and restart persistence |
+| `test_docker.py` | Real image, secrets, UID/GID, umask, cron, service restart, and storage persistence |
 
 For example, run just the installer tests with:
 
@@ -144,9 +248,9 @@ python3 -B -m unittest discover -s tests -p test_installer.py -v
 ```
 
 The installer tests serve fixture version XML and small archives from the local HTTP endpoint. They execute the real
-installer with redirected paths and URLs, including real archive extraction and installation fingerprints.  The update
-tests call that installer and record service restart requests instead of killing processes.  The Xeoma configuration
-tests create real temporary storage links and record calls to Xeoma and network commands.  They do not change your
+installer with redirected paths and URLs, including real archive extraction and installation fingerprints. The update
+tests call that installer and record service restart requests instead of killing processes. The Xeoma configuration
+tests create real temporary storage links and record calls to Xeoma and network commands. They do not change your
 network interfaces, passwords, existing containers, or stored camera settings.
 
 ### Real Docker Smoke Test
@@ -160,8 +264,10 @@ XEOMA_DOCKER_TESTS=1 python3 -B -m unittest discover -s tests -p test_docker.py 
 This requires Docker with Buildx, a reachable Linux Docker server capable of running `linux/amd64` images, and internet
 access for the base image, packages, and Xeoma download. It uses your current Docker context, including a remote server.
 The test builds a unique `coppit/xeoma-test:suite-...` image and starts a disposable container with anonymous volumes.
-It publishes no ports and uses no existing host directories or volumes. It checks that Xeoma listens on port 8090 inside
-the container and that configuration storage survives a restart. It removes its container, anonymous volumes, and image
+It publishes no ports and uses no existing host directories or volumes. A temporary test password file is copied in.
+It checks that Xeoma listens on port 8090 inside the container, runs with the requested UID/GID and umask, and survives
+service and container restarts. It also checks secret-file configuration, legacy password fallback, read-only password mounts with and without a parent directory mount, and cron
+availability. It removes its containers, test volumes, and image
 afterward; Docker's build cache remains. It never pushes an image.
 
 By default, this downloads the latest stable Xeoma release. To select a specific version:
