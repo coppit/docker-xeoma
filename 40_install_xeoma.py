@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import glob
+from datetime import date
 import hashlib
 import json
 import logging
@@ -8,6 +9,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree
 import pathlib
@@ -32,6 +34,14 @@ def read_version_from_config():
 
 #-----------------------------------------------------------------------------------------------------------------------
 
+def version_download_url(version):
+    year, month, day = map(int, version.split('.'))
+    if year < 100:
+        year += 2000
+    return VERSION_DOWNLOAD_URL.format(date(year, month, day).isoformat())
+
+#-----------------------------------------------------------------------------------------------------------------------
+
 def latest_version(beta=False):
     logging.info(f'Fetching version information from Felenasoft at {VERSION_URL}')
 
@@ -48,7 +58,7 @@ def latest_version(beta=False):
 
     download_url = e.find(f'{beta_string}platform[@name="linux64"]').find('url').text
 
-    alternate_download_url = VERSION_DOWNLOAD_URL.format(version_number.replace('.', '-'))
+    alternate_download_url = version_download_url(version_number)
 
     # There's a size field in the XML, but it doesn't appear to be correct.
 
@@ -79,10 +89,7 @@ def resolve_download_info():
     else:
         version_number = version
 
-        # update from version in format 21.18.11, to download url in format 2021-18-11
-        version_string = "20" + version_number.replace('.', '-')
-
-        download_url = VERSION_DOWNLOAD_URL.format(version_string)
+        download_url = version_download_url(version_number)
         alternate_download_url = None
         version_string = f'{version_number} (a user-specified version)'
 
@@ -122,7 +129,13 @@ def download_xeoma(version_number, download_url, alternate_download_url):
 
         logging.info(f'Downloading from {url}')
 
-        urllib.request.urlretrieve(url, TEMP_FILE)
+        try:
+            urllib.request.urlretrieve(url, TEMP_FILE)
+        except (urllib.error.URLError, TimeoutError) as error:
+            logging.warning(f'Download from {url} failed: {error}')
+            if os.path.exists(TEMP_FILE):
+                os.remove(TEMP_FILE)
+            return False
 
         if not string_in_file(b'file not found', TEMP_FILE):
             os.rename(TEMP_FILE, local_file)

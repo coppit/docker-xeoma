@@ -58,7 +58,7 @@ class UpdateTests(XeomaFixture):
 
     def test_pinned_version_does_not_follow_latest(self):
         self.set_version("25.8.22")
-        self.serve("/versions/2025-8-22/linux/xeoma_linux64.tgz", self.stable)
+        self.serve("/versions/2025-08-22/linux/xeoma_linux64.tgz", self.stable)
         self.assertEqual(self.run_installer().returncode, 0)
         self.metadata(stable="25.9.1")
         self.server.requests.clear()

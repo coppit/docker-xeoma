@@ -30,7 +30,7 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.server.requests.append(self.path)
         status, body = self.server.responses.get(self.path, (404, b"not found"))
         self.send_response(status)
-        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Length", str(self.server.content_lengths.get(self.path, len(body))))
         self.end_headers()
         self.wfile.write(body)
 
@@ -67,6 +67,7 @@ class XeomaFixture(unittest.TestCase):
     def start_server(self):
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), FixtureHandler)
         self.server.responses = {}
+        self.server.content_lengths = {}
         self.server.requests = []
         thread = threading.Thread(target=partial(self.server.serve_forever, poll_interval=0.01), daemon=True)
         thread.start()
@@ -92,8 +93,9 @@ class XeomaFixture(unittest.TestCase):
     def set_version(self, version):
         self.merged.write_text(f"export VERSION={shlex.quote(version)}\n")
 
-    def serve(self, path, body, status=200):
+    def serve(self, path, body, status=200, content_length=None):
         self.server.responses[path] = (status, body)
+        self.server.content_lengths[path] = len(body) if content_length is None else content_length
 
     def metadata(self, stable="25.8.22", beta=None, stable_path="/stable.tgz", beta_path="/beta.tgz"):
         def entry(version, path):
