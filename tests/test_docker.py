@@ -54,6 +54,7 @@ test -L /usr/bin/xeoma
 test "$(readlink /usr/local/Xeoma)" = /config
 test "$(readlink /config/XeomaArchive)" = /archive
 test -s /config/macs.txt
+run-parts --test /etc/cron.hourly | grep -Fx /etc/cron.hourly/update-permissions
 ''')
         fingerprint = self.docker("exec", container, "cat", "/files/xeoma/last_installed_version.txt").stdout
         self.assertRegex(fingerprint, r"^[0-9a-f]{32}$")

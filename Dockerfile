@@ -47,8 +47,8 @@ COPY update_xeoma.sh /etc/cron.hourly/update_xeoma
 RUN chmod +x /etc/cron.hourly/update_xeoma
 
 # Script to set permissions to not be world-writable
-COPY update-permissions.sh /etc/cron.hourly/update-permissions.sh
-RUN chmod +x /etc/cron.hourly/update-permissions.sh
+COPY update-permissions.sh /etc/cron.hourly/update-permissions
+RUN chmod +x /etc/cron.hourly/update-permissions
 
 COPY xeoma.sh /etc/service/xeoma/run
 RUN chmod +x /etc/service/xeoma/run
