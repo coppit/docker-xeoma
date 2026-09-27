@@ -68,6 +68,10 @@ this feature in the user interface, and instead just rely on the container's ver
 specific version of the software, this will prevent Xeoma from auto-updating it if the container restarts. If you're
 using the "latest" version, the container will already auto-update (even without a restart).
 
+The container checks for updates hourly only when `VERSION` is `latest` or `latest_beta`. Pinned versions and custom
+download URLs are skipped by the hourly updater. If the saved version setting is missing or unreadable, the updater
+logs an error and skips the update rather than defaulting to `latest`.
+
 ## Notes
 
 ### Licensing and Docker Containers
