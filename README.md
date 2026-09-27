@@ -1,14 +1,23 @@
 # docker-xeoma
 
-This is a Docker container for running [Xeoma](http://felenasoft.com/xeoma/en/), surveillance software developed by Felena Soft. It supports a wide range of security cameras, has low CPU overhead, and a very easy-to-use interface. The container is just for the server, and does not have a user interface. Run the client on any computer or mobile device, connecting to the server on port 8090. You can also [configure Xeoma's cameras](https://felenasoft.com/xeoma/en/articles/transmitter/) to be shown in the web UI, which is accessible on port 10090.
+This is a Docker container for running [Xeoma](http://felenasoft.com/xeoma/en/), surveillance software developed by
+Felena Soft. It supports a wide range of security cameras, has low CPU overhead, and a very easy-to-use interface. The
+container is just for the server, and does not have a user interface. Run the client on any computer or mobile device,
+connecting to the server on port 8090. You can also [configure Xeoma's
+cameras](https://felenasoft.com/xeoma/en/articles/transmitter/) to be shown in the web UI, which is accessible on port
+10090.
 
 This docker image is available [on Docker Hub](https://hub.docker.com/r/coppit/xeoma/).
 
-You can try out Xeoma using the trial version of the software, then purchase it when you are ready. Note the limitations of the trial version however -- settings aren't saved, and archived videos get deleted after 1 hour. Avoid the free version, as it cannot connect to your container. Make sure you read [the EULA](http://felenasoft.com/xeoma/en/eula/) as you are effectively agreeing to it by running this docker.
+You can try out Xeoma using the trial version of the software, then purchase it when you are ready. Note the limitations
+of the trial version however -- settings aren't saved, and archived videos get deleted after 1 hour. Avoid the free
+version, as it cannot connect to your container. Make sure you read [the EULA](http://felenasoft.com/xeoma/en/eula/) as
+you are effectively agreeing to it by running this docker.
 
 ## Running
 
-You can either use environment variables or a configuration file to configure this container. With environment variables:
+You can either use environment variables or a configuration file to configure this container. With environment
+variables:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive -e VERSION='latest' -e PASSWORD='<password>' coppit/xeoma`
 
@@ -16,13 +25,18 @@ To create a template config file instead, run:
 
 `docker run -d --name=Xeoma -p 8090:8090 -p 10090:10090 -v /local/path/to/config:/config -v /local/path/to/archive:/archive coppit/xeoma`
 
-When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit. Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see below). Then rerun the command.
+When run for the first time, a file named xeoma.conf will be created in the config dir, and the container will exit.
+Edit this file, setting the client password, and changing `VERSION` if you want to run a different version of Xeoma (see
+below). Then rerun the command.
 
 The archive folder holds the saved video recordings.
 
-To access your xeoma server, simply download the same version from [the Xeoma website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of the docker host and the password you selected.
+To access your xeoma server, simply download the same version from [the Xeoma
+website](http://felenasoft.com/xeoma/en/download/) and set it up to connect to a remote server using the IP address of
+the docker host and the password you selected.
 
-NOTE: If you're opening port 10090 for the web server, you need to actually add the web server to at least one camera. Otherwise you'll get a "404 Not Found" message when you access the webpage with a browser.
+NOTE: If you're opening port 10090 for the web server, you need to actually add the web server to at least one camera.
+Otherwise you'll get a "404 Not Found" message when you access the webpage with a browser.
 
 See the notes below for special networking considerations depending on your cameras, and for licensing issues.
 
@@ -32,45 +46,73 @@ View logs using:
 
 ## Using an Archive Cache
 
-You can optionally use a folder for temporary storage of recording files until they are fully recorded, then moved to the archive. Using this parameter significantly reduces disk fragmentation. This can be useful for a large number of cameras, or when using an SSD for the main archive.
+You can optionally use a folder for temporary storage of recording files until they are fully recorded, then moved to
+the archive. Using this parameter significantly reduces disk fragmentation. This can be useful for a large number of
+cameras, or when using an SSD for the main archive.
 
-To use this feature, simply add an additional option when running the container: `-v /local/path/to/archive-cache:/archive-cache`.
+To use this feature, simply add an additional option when running the container: `-v
+/local/path/to/archive-cache:/archive-cache`.
 
 ## Choosing a Version
 
-The `VERSION` environment variable can be used to select the version of Xeoma to use. Values can be "latest", "latest_beta", a version string like "17.5.5", or a URL that starts with "http://", "https://" or "ftp://". The default value is "latest". The change history for Xeoma is [here](http://felenasoft.com/xeoma/en/changes/).
+The `VERSION` environment variable can be used to select the version of Xeoma to use. Values can be "latest",
+"latest_beta", a version string like "17.5.5", or a URL that starts with "http://", "https://" or "ftp://". The default
+value is "latest". The change history for Xeoma is [here](http://felenasoft.com/xeoma/en/changes/).
 
-During startup, the desired version of Xeoma is downloaded as needed into the "downloads" subdirectory of the config directory. Any files in that directory matching the pattern `xeoma_*.tgz` will be deleted. It is then installed automatically.
+During startup, the desired version of Xeoma is downloaded as needed into the "downloads" subdirectory of the config
+directory. Any files in that directory matching the pattern `xeoma_*.tgz` will be deleted. It is then installed
+automatically.
 
-**Warning**: By default, Xeoma will automatically detect new versions on startup and update itself. You should disable this feature in the user interface, and instead just rely on the container's version handling. If you're using a specific version of the software, this will prevent Xeoma from auto-updating it if the container restarts. If you're using the "latest" version, the container will already auto-update (even without a restart).
+**Warning**: By default, Xeoma will automatically detect new versions on startup and update itself. You should disable
+this feature in the user interface, and instead just rely on the container's version handling. If you're using a
+specific version of the software, this will prevent Xeoma from auto-updating it if the container restarts. If you're
+using the "latest" version, the container will already auto-update (even without a restart).
 
 ## Notes
 
 ### Licensing and Docker Containers
 
-How licensing works is a bit unclear. As of version 16.12.26, the Lite version prohibits running inside virtual machines. Whether (and how!) this applies to docker containers is unclear. Your container may also need continuous internet access to validate the license.
+How licensing works is a bit unclear. As of version 16.12.26, the Lite version prohibits running inside virtual
+machines. Whether (and how!) this applies to docker containers is unclear. Your container may also need continuous
+internet access to validate the license.
 
-When you register your software, the license will be stored in your config directory. So it will be carried across container updates, along with any configuration changes you made in the app. But if you ever delete the config directory, you might have to contact Felena soft for another registration key.
+When you register your software, the license will be stored in your config directory. So it will be carried across
+container updates, along with any configuration changes you made in the app. But if you ever delete the config
+directory, you might have to contact Felena soft for another registration key.
 
-Be careful about choosing your networking settings before installing your license. If you have registered the software with host or bridged networking, then if you change to the other type of networking, you will see an error message. You should still be able to switch back.
+Be careful about choosing your networking settings before installing your license. If you have registered the software
+with host or bridged networking, then if you change to the other type of networking, you will see an error message. You
+should still be able to switch back.
 
-However, if you have any issues, the container will append some information about the MAC address to the file macs.txt each time it starts. If you have trouble getting the license to work, try using the `--mac-address` flag to the run command to force your new container to have the same MAC address as your old one. This will only work if you are using bridged networking.
+However, if you have any issues, the container will append some information about the MAC address to the file macs.txt
+each time it starts. If you have trouble getting the license to work, try using the `--mac-address` flag to the run
+command to force your new container to have the same MAC address as your old one. This will only work if you are using
+bridged networking.
 
-Alternatively, or if you are running in a Kubernetes and cannot set your mac address, you can set the MAC_ADDRESS variable, either in the container environment or in the xeoma.conf file.  The container will set its own MAC address at startup. Note that this may require the addition of the `--cap-add=NET_ADMIN` flag.
+Alternatively, or if you are running in a Kubernetes and cannot set your mac address, you can set the MAC_ADDRESS
+variable, either in the container environment or in the xeoma.conf file.  The container will set its own MAC address at
+startup. Note that this may require the addition of the `--cap-add=NET_ADMIN` flag.
 
-Finally, if all else fails, [use the felenasoft website for help](http://felenasoft.com/xeoma/en/support/activation-issues/).
+Finally, if all else fails, [use the felenasoft website for
+help](http://felenasoft.com/xeoma/en/support/activation-issues/).
 
 ### Discovering Cameras
 
-Depending on how your security camera works, you might need to enable host networking by adding `--net=host` to your run command. If you are using IP cameras, you can run this container in bridged networking mode, which is more secure. However, you will need to manually enter the URL for the camera, because the camera search feature probably won't work. You can [consult this website](https://www.ispyconnect.com/sources.aspx) for information about rtsp:// URLs for accessing the camera's low and high quality video streams. 
+Depending on how your security camera works, you might need to enable host networking by adding `--net=host` to your run
+command. If you are using IP cameras, you can run this container in bridged networking mode, which is more secure.
+However, you will need to manually enter the URL for the camera, because the camera search feature probably won't work.
+You can [consult this website](https://www.ispyconnect.com/sources.aspx) for information about rtsp:// URLs for
+accessing the camera's low and high quality video streams. 
 
 ### Support
 
-If you find any bugs with the software that are related to the docker container, let me know and I'll investigate.  If you find bugs that are related to the actual software or cameras, etc then contact FelenaSoft.
+If you find any bugs with the software that are related to the docker container, let me know and I'll investigate.  If
+you find bugs that are related to the actual software or cameras, etc then contact FelenaSoft.
 
 ## Running Tests
 
-The default test suite requires Python 3, Bash at `/bin/bash`, `tar`, and standard Unix utilities on macOS or Linux.  It uses Python's built-in `unittest` module; no additional Python packages are needed.
+The default test suite requires Python 3, Bash at `/bin/bash`, `tar`, and standard Unix utilities on macOS or Linux.  It
+uses Python's built-in `unittest` module; no additional Python packages are needed.
 
 From the repository root, run the default suite:
 
@@ -78,7 +120,9 @@ From the repository root, run the default suite:
 python3 -B -m unittest discover -s tests -v
 ```
 
-The real Docker smoke test is skipped unless explicitly enabled. The default suite uses temporary directories, mock commands, and an HTTP server bound to `127.0.0.1` on an automatically selected port. Your environment must allow loopback connections. No external internet access or Docker server is needed for these tests.
+The real Docker smoke test is skipped unless explicitly enabled. The default suite uses temporary directories, mock
+commands, and an HTTP server bound to `127.0.0.1` on an automatically selected port. Your environment must allow
+loopback connections. No external internet access or Docker server is needed for these tests.
 
 | Test file | Coverage |
 | --- | --- |
@@ -95,7 +139,11 @@ For example, run just the installer tests with:
 python3 -B -m unittest discover -s tests -p test_installer.py -v
 ```
 
-The installer tests serve fixture version XML and small archives from the local HTTP endpoint. They execute the real installer with redirected paths and URLs, including real archive extraction and installation fingerprints.  The update tests call that installer and record service restart requests instead of killing processes.  The Xeoma configuration tests create real temporary storage links and record calls to Xeoma and network commands.  They do not change your network interfaces, passwords, existing containers, or stored camera settings.
+The installer tests serve fixture version XML and small archives from the local HTTP endpoint. They execute the real
+installer with redirected paths and URLs, including real archive extraction and installation fingerprints.  The update
+tests call that installer and record service restart requests instead of killing processes.  The Xeoma configuration
+tests create real temporary storage links and record calls to Xeoma and network commands.  They do not change your
+network interfaces, passwords, existing containers, or stored camera settings.
 
 ### Real Docker Smoke Test
 
@@ -105,7 +153,12 @@ To also verify the actual image and proprietary Xeoma executable, enable the Doc
 XEOMA_DOCKER_TESTS=1 python3 -B -m unittest discover -s tests -p test_docker.py -v
 ```
 
-This requires Docker with Buildx, a reachable Linux Docker server capable of running `linux/amd64` images, and internet access for the base image, packages, and Xeoma download. It uses your current Docker context, including a remote server.  The test builds a unique `coppit/xeoma-test:suite-...` image and starts a disposable container with anonymous volumes.  It publishes no ports and uses no existing host directories or volumes. It checks that Xeoma listens on port 8090 inside the container and that configuration storage survives a restart. It removes its container, anonymous volumes, and image afterward; Docker's build cache remains. It never pushes an image.
+This requires Docker with Buildx, a reachable Linux Docker server capable of running `linux/amd64` images, and internet
+access for the base image, packages, and Xeoma download. It uses your current Docker context, including a remote server.
+The test builds a unique `coppit/xeoma-test:suite-...` image and starts a disposable container with anonymous volumes.
+It publishes no ports and uses no existing host directories or volumes. It checks that Xeoma listens on port 8090 inside
+the container and that configuration storage survives a restart. It removes its container, anonymous volumes, and image
+afterward; Docker's build cache remains. It never pushes an image.
 
 By default, this downloads the latest stable Xeoma release. To select a specific version:
 
@@ -113,12 +166,15 @@ By default, this downloads the latest stable Xeoma release. To select a specific
 XEOMA_DOCKER_TESTS=1 XEOMA_TEST_VERSION=25.8.22 python3 -B -m unittest discover -s tests -p test_docker.py -v
 ```
 
-Allow several minutes for a fresh build and download. External service failures can cause this optional test to fail.  This is a startup smoke test, not a camera recording, licensing, or client authentication test.
+Allow several minutes for a fresh build and download. External service failures can cause this optional test to fail.
+This is a startup smoke test, not a camera recording, licensing, or client authentication test.
 
 New test files should be named `tests/test_*.py` and use `unittest.TestCase`. Keep new lines within 120 characters.
 
 ## Credits
 
-This docker container was initially based on the [jedimonkey/xeoma container](https://github.com/jedimonkey/xeoma-docker).
+This docker container was initially based on the [jedimonkey/xeoma
+container](https://github.com/jedimonkey/xeoma-docker).
 
-Thanks to [https://github.com/skylord123](skylord123) on github for the excellent suggestions about how to handle versioning.
+Thanks to [https://github.com/skylord123](skylord123) on github for the excellent suggestions about how to handle
+versioning.
