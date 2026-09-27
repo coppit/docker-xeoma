@@ -1,4 +1,4 @@
-FROM phusion/baseimage:noble-1.0.2
+FROM phusion/baseimage:resolute-1.0.18
 
 LABEL org.opencontainers.image.authors="David Coppit <david@coppit.org>" \
       org.opencontainers.image.source="https://github.com/coppit/docker-xeoma"
