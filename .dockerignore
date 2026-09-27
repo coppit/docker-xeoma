@@ -1,0 +1,10 @@
+.git
+.agents
+.codex
+**/__pycache__
+**/*.py[cod]
+.DS_Store
+tests
+README.md
+xeoma.png
+build.sh
