@@ -68,6 +68,55 @@ Depending on how your security camera works, you might need to enable host netwo
 
 If you find any bugs with the software that are related to the docker container, let me know and I'll investigate.  If you find bugs that are related to the actual software or cameras, etc then contact FelenaSoft.
 
+## Running Tests
+
+The default test suite requires Python 3, Bash at `/bin/bash`, `tar`, and standard Unix utilities on macOS or Linux.  It uses Python's built-in `unittest` module; no additional Python packages are needed.
+
+From the repository root, run the default suite:
+
+```sh
+python3 -B -m unittest discover -s tests -v
+```
+
+The real Docker smoke test is skipped unless explicitly enabled. The default suite uses temporary directories, mock commands, and an HTTP server bound to `127.0.0.1` on an automatically selected port. Your environment must allow loopback connections. No external internet access or Docker server is needed for these tests.
+
+| Test file | Coverage |
+| --- | --- |
+| `test_config.py` | Collecting settings, defaults, environment precedence, stale settings, and first-run setup |
+| `test_build.py` | Development/publish command selection, help, invalid arguments, and Docker command failures |
+| `test_installer.py` | Stable/beta/pinned/custom versions, downloads, fallback, caching, extraction, and failures |
+| `test_updates.py` | Installing updates, restart requests, unchanged/pinned versions, and failed downloads |
+| `test_configure.py` | Password arguments, MAC handling, storage links, repeated setup, and command failures |
+| `test_docker.py` | Opt-in real image build, Xeoma startup, storage links, and restart persistence |
+
+For example, run just the installer tests with:
+
+```sh
+python3 -B -m unittest discover -s tests -p test_installer.py -v
+```
+
+The installer tests serve fixture version XML and small archives from the local HTTP endpoint. They execute the real installer with redirected paths and URLs, including real archive extraction and installation fingerprints.  The update tests call that installer and record service restart requests instead of killing processes.  The Xeoma configuration tests create real temporary storage links and record calls to Xeoma and network commands.  They do not change your network interfaces, passwords, existing containers, or stored camera settings.
+
+### Real Docker Smoke Test
+
+To also verify the actual image and proprietary Xeoma executable, enable the Docker smoke test:
+
+```sh
+XEOMA_DOCKER_TESTS=1 python3 -B -m unittest discover -s tests -p test_docker.py -v
+```
+
+This requires Docker with Buildx, a reachable Linux Docker server capable of running `linux/amd64` images, and internet access for the base image, packages, and Xeoma download. It uses your current Docker context, including a remote server.  The test builds a unique `coppit/xeoma-test:suite-...` image and starts a disposable container with anonymous volumes.  It publishes no ports and uses no existing host directories or volumes. It checks that Xeoma listens on port 8090 inside the container and that configuration storage survives a restart. It removes its container, anonymous volumes, and image afterward; Docker's build cache remains. It never pushes an image.
+
+By default, this downloads the latest stable Xeoma release. To select a specific version:
+
+```sh
+XEOMA_DOCKER_TESTS=1 XEOMA_TEST_VERSION=25.8.22 python3 -B -m unittest discover -s tests -p test_docker.py -v
+```
+
+Allow several minutes for a fresh build and download. External service failures can cause this optional test to fail.  This is a startup smoke test, not a camera recording, licensing, or client authentication test.
+
+New test files should be named `tests/test_*.py` and use `unittest.TestCase`. Keep new lines within 120 characters.
+
 ## Credits
 
 This docker container was initially based on the [jedimonkey/xeoma container](https://github.com/jedimonkey/xeoma-docker).
